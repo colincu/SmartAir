@@ -34,11 +34,6 @@ public final class SmartAirLoginImpl {
   static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_SmartAir_UserLogoutResponse_fieldAccessorTable;
-  static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_SmartAir_Empty_descriptor;
-  static final 
-    com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_SmartAir_Empty_fieldAccessorTable;
 
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -54,13 +49,13 @@ public final class SmartAirLoginImpl {
       "eMessage\030\001 \001(\t\022\024\n\014responseCode\030\002 \001(\005\"!\n\021" +
       "UserLogoutRequest\022\014\n\004name\030\001 \001(\t\"C\n\022UserL" +
       "ogoutResponse\022\027\n\017responseMessage\030\001 \001(\t\022\024" +
-      "\n\014responseCode\030\002 \001(\005\"\007\n\005Empty2\245\001\n\020UserLo" +
-      "ginService\022F\n\tUserLogin\022\032.SmartAir.UserL" +
-      "oginRequest\032\033.SmartAir.UserLoginResponse" +
-      "\"\000\022I\n\nUserLogout\022\033.SmartAir.UserLogoutRe" +
-      "quest\032\034.SmartAir.UserLogoutResponse\"\000B-\n" +
-      "\026grpc.examples.SmartAirB\021SmartAirLoginIm" +
-      "plP\001b\006proto3"
+      "\n\014responseCode\030\002 \001(\0052\245\001\n\020UserLoginServic" +
+      "e\022F\n\tUserLogin\022\032.SmartAir.UserLoginReque" +
+      "st\032\033.SmartAir.UserLoginResponse\"\000\022I\n\nUse" +
+      "rLogout\022\033.SmartAir.UserLogoutRequest\032\034.S" +
+      "martAir.UserLogoutResponse\"\000B-\n\026grpc.exa" +
+      "mples.SmartAirB\021SmartAirLoginImplP\001b\006pro" +
+      "to3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -98,12 +93,6 @@ public final class SmartAirLoginImpl {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_SmartAir_UserLogoutResponse_descriptor,
         new java.lang.String[] { "ResponseMessage", "ResponseCode", });
-    internal_static_SmartAir_Empty_descriptor =
-      getDescriptor().getMessageTypes().get(4);
-    internal_static_SmartAir_Empty_fieldAccessorTable = new
-      com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_SmartAir_Empty_descriptor,
-        new java.lang.String[] { });
   }
 
   // @@protoc_insertion_point(outer_class_scope)

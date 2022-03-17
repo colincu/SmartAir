@@ -60,7 +60,6 @@ public class UserLoginServer extends UserLoginServiceGrpc.UserLoginServiceImplBa
 
 @Override
     public void userLogout(UserLogoutRequest request, StreamObserver<UserLogoutResponse> responseObserver) {
-        System.out.println("User attempting to logout....");
         String username = request.getName();
 
         UserLogoutResponse.Builder response = UserLogoutResponse.newBuilder();

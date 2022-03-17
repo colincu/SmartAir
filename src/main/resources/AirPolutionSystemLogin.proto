@@ -36,5 +36,3 @@ message UserLogoutResponse{
   string responseMessage = 1;
   int32 responseCode = 2;
 }
-
-message Empty{}
