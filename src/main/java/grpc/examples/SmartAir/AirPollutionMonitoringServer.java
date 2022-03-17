@@ -51,26 +51,28 @@ public class AirPollutionMonitoringServer extends AirPollutionMonitoringGrpc.Air
         AirQualityReply.Builder response = AirQualityReply.newBuilder();
         System.out.println("Requesting air quality for room: " + room);
 
-        if(room.equals("1")) {
-            // if room 1 requested
-            System.out.println("The air quality of room " + room + " is: " + response.setQuality(arr[0]));
-        }
-        else if(room.equals("2")) {
-            // if room 2 requested
-            System.out.println("The air quality of room " + room + " is: " + response.setQuality(arr[1]));
-        }
-        else if(room.equals("3")) {
-            // if room 3 requested
-            System.out.println("The air quality of room " + room + " is: " + response.setQuality(arr[2]));
-        }
-        else if(room.equals("4")) {
-            // if room 4 requested
-            System.out.println("The air quality of room " + room + " is: " + response.setQuality(arr[3]));
-        }
-        else{
-            // no valid room requested
-            response.setQuality(0);
-            System.out.println("Please select a valid room");
+        switch (room) {
+            case "1":
+                // if room 1 requested
+                System.out.println("The air quality of room " + room + " is: " + response.setQuality(arr[0]));
+                break;
+            case "2":
+                // if room 2 requested
+                System.out.println("The air quality of room " + room + " is: " + response.setQuality(arr[1]));
+                break;
+            case "3":
+                // if room 3 requested
+                System.out.println("The air quality of room " + room + " is: " + response.setQuality(arr[2]));
+                break;
+            case "4":
+                // if room 4 requested
+                System.out.println("The air quality of room " + room + " is: " + response.setQuality(arr[3]));
+                break;
+            default:
+                // no valid room requested
+                response.setQuality(0);
+                System.out.println("Please select a valid room");
+                break;
         }
 
         responseObserver.onNext(response.build());
@@ -80,7 +82,6 @@ public class AirPollutionMonitoringServer extends AirPollutionMonitoringGrpc.Air
     @Override
     public void allRoomAirQuality(AllAirQualityRequest request, StreamObserver<AirQualityReply> responseObserver) {
         System.out.println("Received request for air quality of all rooms");
-        String allRoom = request.getAllRoom();
 
         // manual set number of rooms ( in future we could have an array or dict of room:air_quality values to loop through
         int num_rooms = 4;
