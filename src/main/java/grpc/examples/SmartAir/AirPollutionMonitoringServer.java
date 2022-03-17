@@ -6,7 +6,7 @@ import io.grpc.stub.StreamObserver;
 import java.io.IOException;
 import java.util.logging.Logger;
 
-public class AirPollutionMonitoringServer extends AirPollutionMonitoringGrpc.AirPollutionMonitoringImplBase{
+public class AirPollutionMonitoringServer extends AirPollutionMonitoringGrpc.AirPollutionMonitoringImplBase {
 
     private static final Logger logger = Logger.getLogger(AirPollutionMonitoringServer.class.getName());
 
@@ -34,14 +34,14 @@ public class AirPollutionMonitoringServer extends AirPollutionMonitoringGrpc.Air
 
             server.awaitTermination();
 
-        }
-        catch(InterruptedException e) {
+        } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
     }
 
     // Override userLogin method from AirPollutionMonitoringGrpc.AirPollutionMonitoringImplBase
+    // this grpc method is Unary
     @Override
     public void roomAirQuality(AirQualityRequest request, StreamObserver<AirQualityReply> responseObserver) {
         System.out.println("Attempting to request room air quality....");
@@ -76,25 +76,140 @@ public class AirPollutionMonitoringServer extends AirPollutionMonitoringGrpc.Air
         }
 
         responseObserver.onNext(response.build());
+        // finished writing responses
         responseObserver.onCompleted();
     }
 
+    // this grpc method is server streaming
     @Override
     public void allRoomAirQuality(AllAirQualityRequest request, StreamObserver<AirQualityReply> responseObserver) {
         System.out.println("Received request for air quality of all rooms");
 
         // manual set number of rooms ( in future we could have an array or dict of room:air_quality values to loop through
         int num_rooms = 4;
-        // loop through rooms
 
+        // loop through rooms and write in turn to the response observer
         for (int room = 1; room < num_rooms + 1; room++) {
-            System.out.println("The air quality of room " + room + " is: " + AirQualityReply.newBuilder().setQuality(arr[room-1]));
-            // Create response object
-            responseObserver.onNext(AirQualityReply.newBuilder().setQuality(arr[room-1]).build());
+            // print to terminal for us to validate during dev
+            //System.out.println("The air quality of room " + room + " is: " + AirQualityReply.newBuilder().setQuality(arr[room-1]));
+            // write to response observer
+            //responseObserver.onNext(AirQualityReply.newBuilder().setQuality(arr[room-1]).build());
+            AirQualityReply reply = AirQualityReply.newBuilder()
+                    .setQuality(arr[room - 1])
+                    .build();
+            responseObserver.onNext(reply);
         }
 
+        // finished writing responses
         responseObserver.onCompleted();
     }
 
+    // this grpc method is client and server streaming - bidirectional
+    @Override
+    public StreamObserver<AirQualityRequest> roomsAirQuality(StreamObserver<AirQualityReply> responseObserver) {
+        return new StreamObserver<AirQualityRequest>() {
+
+            @Override
+            public void onNext(AirQualityRequest request) {
+                String room = request.getRoom();
+
+                // Create response object
+                AirQualityReply.Builder response = AirQualityReply.newBuilder();
+                System.out.println("Requesting air quality for room: " + room);
+
+                switch (room) {
+                    case "1":
+                        // if room 1 requested
+                        System.out.println("The air quality of room " + room + " is: " + response.setQuality(arr[0]));
+                        break;
+                    case "2":
+                        // if room 2 requested
+                        System.out.println("The air quality of room " + room + " is: " + response.setQuality(arr[1]));
+                        break;
+                    case "3":
+                        // if room 3 requested
+                        System.out.println("The air quality of room " + room + " is: " + response.setQuality(arr[2]));
+                        break;
+                    case "4":
+                        // if room 4 requested
+                        System.out.println("The air quality of room " + room + " is: " + response.setQuality(arr[3]));
+                        break;
+                    default:
+                        // no valid room requested
+                        response.setQuality(0);
+                        System.out.println("Please select a valid room");
+                        break;
+                }
+
+                responseObserver.onNext(response.build());
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                //
+            }
+
+            @Override
+            public void onCompleted() {
+                responseObserver.onCompleted();
+
+            }
+
+        };
+    }
+
+    // this grpc method is client side streaming
+    @Override
+    public StreamObserver<AirQualityRequest> aveRoomAirQuality(StreamObserver<AveAirQualityReply> responseObserver) {
+        return new StreamObserver<AirQualityRequest>() {
+            //declare variables to calculate average
+            int count;
+            int total;
+            int ave;
+
+            // method to execute each time a stream is submitted
+            @Override
+            public void onNext(AirQualityRequest request) {
+                // increment to count each time this is executed, we can calculate the average
+                count++;
+                String room = request.getRoom();
+                int quality;
+                // set quality based on the room number selected in request message
+                switch (room) {
+                    case "1":
+                        quality = arr[0];
+                        break;
+                    case "2":
+                        quality = arr[1];
+                        break;
+                    case "3":
+                        quality = arr[2];
+                        break;
+                    case "4":
+                        quality = arr[3];
+                        break;
+                    default:
+                        quality = 0;
+                        break;
+                }
+                // kkep track of total so we can calculate the average
+                total += quality;
+            }
+
+            @Override
+            public void onError (Throwable t){
+                //
+            }
+
+            //return the average once client streaming is complete
+            @Override
+            public void onCompleted () {
+                ave = total/count;
+                AveAirQualityReply res = AveAirQualityReply.newBuilder().setQuality(ave).build();
+                responseObserver.onNext(res);
+                responseObserver.onCompleted();
+            }
+        };
+    }
 }
 
