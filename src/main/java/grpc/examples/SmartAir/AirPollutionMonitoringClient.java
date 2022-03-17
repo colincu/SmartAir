@@ -39,6 +39,7 @@ public class AirPollutionMonitoringClient {
         AveRoomAirQuality();
 
         channel.shutdown();
+        channel.shutdownNow();
 
     }
 
@@ -120,7 +121,7 @@ public class AirPollutionMonitoringClient {
     }
 
     //client side streaming rpc
-    public static void AveRoomAirQuality(){
+    public static void AveRoomAirQuality() throws InterruptedException{
         StreamObserver<AveAirQualityReply> responseObserver = new StreamObserver<AveAirQualityReply>() {
             @Override
             public void onNext(AveAirQualityReply value) {
@@ -131,7 +132,6 @@ public class AirPollutionMonitoringClient {
             public void onError(Throwable t) {
 
             }
-
             @Override
             public void onCompleted() {
                 logger.info("Completed average room air quality calculations.");
@@ -144,16 +144,19 @@ public class AirPollutionMonitoringClient {
             // Sleep for some time before sending the next one.
             Thread.sleep(new Random().nextInt(1000) + 2000);
             requestObserver.onNext(AirQualityRequest.newBuilder().setRoom("2").build());
+            logger.info("Sending room 2..");
             // Sleep for some time before sending the next one.
             Thread.sleep(new Random().nextInt(1000) + 2000);
             requestObserver.onNext(AirQualityRequest.newBuilder().setRoom("3").build());
+            logger.info("Sending room 3..");
             // Sleep for some time before sending the next one.
             Thread.sleep(new Random().nextInt(1000) + 2000);
             requestObserver.onNext(AirQualityRequest.newBuilder().setRoom("4").build());
+            logger.info("Sending room 4..");
             // Sleep for some time before sending the next one.
             Thread.sleep(new Random().nextInt(1000) + 2000);
 
-            logger.info("Sending messages...");
+            logger.info("Calculating average of the rooms provided...");
 
             // end of requests
             requestObserver.onCompleted();

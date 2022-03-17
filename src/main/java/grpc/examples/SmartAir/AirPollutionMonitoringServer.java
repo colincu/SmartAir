@@ -206,6 +206,7 @@ public class AirPollutionMonitoringServer extends AirPollutionMonitoringGrpc.Air
             public void onCompleted () {
                 ave = total/count;
                 AveAirQualityReply res = AveAirQualityReply.newBuilder().setQuality(ave).build();
+                System.out.println("The average air quality for the rooms provided is: " + ave);
                 responseObserver.onNext(res);
                 responseObserver.onCompleted();
             }
