@@ -6,9 +6,9 @@ option java_outer_classname = "SmartAirServiceImpl";
 
 package SmartAir;
 
-// Interface exported by the server.
+// Service provided by server.
 service AirPollutionMonitoring {
-  // Sends a request for the air quality level for a specific room, reply is the air quality level
+
   rpc  RoomAirQuality (AirQualityRequest) returns (AirQualityReply) {}
 
   // Sends a request for air quality levels for all rooms, reply is a stream of air quality levels for all rooms

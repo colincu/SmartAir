@@ -17,7 +17,7 @@ import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
 
 /**
  * <pre>
- * Interface exported by the server.
+ * Service provided by server.
  * </pre>
  */
 @javax.annotation.Generated(
@@ -183,15 +183,12 @@ public final class AirPollutionMonitoringGrpc {
 
   /**
    * <pre>
-   * Interface exported by the server.
+   * Service provided by server.
    * </pre>
    */
   public static abstract class AirPollutionMonitoringImplBase implements io.grpc.BindableService {
 
     /**
-     * <pre>
-     * Sends a request for the air quality level for a specific room, reply is the air quality level
-     * </pre>
      */
     public void roomAirQuality(grpc.examples.SmartAir.AirQualityRequest request,
         io.grpc.stub.StreamObserver<grpc.examples.SmartAir.AirQualityReply> responseObserver) {
@@ -264,7 +261,7 @@ public final class AirPollutionMonitoringGrpc {
 
   /**
    * <pre>
-   * Interface exported by the server.
+   * Service provided by server.
    * </pre>
    */
   public static final class AirPollutionMonitoringStub extends io.grpc.stub.AbstractStub<AirPollutionMonitoringStub> {
@@ -284,9 +281,6 @@ public final class AirPollutionMonitoringGrpc {
     }
 
     /**
-     * <pre>
-     * Sends a request for the air quality level for a specific room, reply is the air quality level
-     * </pre>
      */
     public void roomAirQuality(grpc.examples.SmartAir.AirQualityRequest request,
         io.grpc.stub.StreamObserver<grpc.examples.SmartAir.AirQualityReply> responseObserver) {
@@ -330,7 +324,7 @@ public final class AirPollutionMonitoringGrpc {
 
   /**
    * <pre>
-   * Interface exported by the server.
+   * Service provided by server.
    * </pre>
    */
   public static final class AirPollutionMonitoringBlockingStub extends io.grpc.stub.AbstractStub<AirPollutionMonitoringBlockingStub> {
@@ -350,9 +344,6 @@ public final class AirPollutionMonitoringGrpc {
     }
 
     /**
-     * <pre>
-     * Sends a request for the air quality level for a specific room, reply is the air quality level
-     * </pre>
      */
     public grpc.examples.SmartAir.AirQualityReply roomAirQuality(grpc.examples.SmartAir.AirQualityRequest request) {
       return blockingUnaryCall(
@@ -373,7 +364,7 @@ public final class AirPollutionMonitoringGrpc {
 
   /**
    * <pre>
-   * Interface exported by the server.
+   * Service provided by server.
    * </pre>
    */
   public static final class AirPollutionMonitoringFutureStub extends io.grpc.stub.AbstractStub<AirPollutionMonitoringFutureStub> {
@@ -393,9 +384,6 @@ public final class AirPollutionMonitoringGrpc {
     }
 
     /**
-     * <pre>
-     * Sends a request for the air quality level for a specific room, reply is the air quality level
-     * </pre>
      */
     public com.google.common.util.concurrent.ListenableFuture<grpc.examples.SmartAir.AirQualityReply> roomAirQuality(
         grpc.examples.SmartAir.AirQualityRequest request) {

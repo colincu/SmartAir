@@ -1,0 +1,40 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "grpc.examples.SmartAir";
+option java_outer_classname = "SmartAirLoginImpl";
+
+package SmartAir;
+
+// Login service provided by server.
+service UserLoginService{
+  // Sends a request for a user to login providing username and password, reply is login success/failure
+  rpc UserLogin(UserLoginRequest) returns (UserLoginResponse){}
+  // Sends a request for a user to logout providing just username, reply is logout success/failure
+  rpc UserLogout(UserLogoutRequest) returns (UserLogoutResponse){}
+}
+
+// Login request with name and pass
+message UserLoginRequest{
+  string name = 1;
+  string pass = 2;
+}
+
+// Login response
+message UserLoginResponse{
+  string responseMessage = 1;
+  int32 responseCode = 2;
+}
+
+// Logout request with name
+message UserLogoutRequest{
+  string name = 1;
+}
+
+// Logout response
+message UserLogoutResponse{
+  string responseMessage = 1;
+  int32 responseCode = 2;
+}
+
+message Empty{}
