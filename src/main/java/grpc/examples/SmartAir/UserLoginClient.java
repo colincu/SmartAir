@@ -3,12 +3,15 @@ package grpc.examples.SmartAir;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
+import java.util.concurrent.TimeUnit;
+
 public class UserLoginClient {
 
     // instantiate the stub class
     private static UserLoginServiceGrpc.UserLoginServiceBlockingStub blockingStub;
 
-    public static void main(String[] args) {
+    // InterruptedException needed for channel.awaitTermination method
+    public static void main(String[] args) throws InterruptedException {
         // Creating channel for connection
         ManagedChannel channel = ManagedChannelBuilder.forAddress("localhost", 50555).usePlaintext().build();
 
@@ -31,6 +34,11 @@ public class UserLoginClient {
 
         //Call the logout RPC from logout() method
         //logout();
+
+        // no new tasks will be accepted, starts orderly shutdown
+        channel.shutdown();
+        // waits for all shutdown tasks to complete or the timeout, whichever is first
+        channel.awaitTermination(2, TimeUnit.SECONDS);
     }
 
     //Login

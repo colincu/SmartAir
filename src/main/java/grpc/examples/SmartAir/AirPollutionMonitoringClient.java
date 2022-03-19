@@ -8,6 +8,7 @@ import io.grpc.stub.StreamObserver;
 
 import java.util.Iterator;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 public class AirPollutionMonitoringClient {
@@ -38,8 +39,10 @@ public class AirPollutionMonitoringClient {
         //get ave room air quality
         AveRoomAirQuality();
 
+        // no new tasks will be accepted, starts orderly shutdown
         channel.shutdown();
-        channel.shutdownNow();
+        // waits for all shutdown tasks to complete or the timeout, whichever is first
+        channel.awaitTermination(2, TimeUnit.SECONDS);
 
     }
 
