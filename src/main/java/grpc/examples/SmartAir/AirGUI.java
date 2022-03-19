@@ -1,5 +1,8 @@
 package grpc.examples.SmartAir;
 
+import io.grpc.ManagedChannel;
+import io.grpc.ManagedChannelBuilder;
+
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -82,7 +85,24 @@ public class AirGUI implements ActionListener {
         String pass = passText.getText();
         System.out.println(user + " " + pass);
 
-        if(user.equals("Colin") && pass.equals("DistSystems")){
+
+        // Creating channel for connection
+        ManagedChannel loginChannel = ManagedChannelBuilder.forAddress("localhost", 50555).usePlaintext().build();
+        UserLoginServiceGrpc.UserLoginServiceBlockingStub blockingStub;
+        blockingStub = UserLoginServiceGrpc.newBlockingStub(loginChannel);
+
+        //call user login client and pass in collected parameters
+        UserLoginResponse response = UserLoginClient.userLogin(user, pass, blockingStub);
+        int responseCode = response.getResponseCode();
+
+        //shut connection
+        try {
+            UserLoginClient.shut(loginChannel);
+        } catch (InterruptedException ex) {
+            ex.printStackTrace();
+        }
+
+        if(responseCode == 1){
             panel.remove(userText);
             panel.remove(userLabel);
             panel.remove(passText);
