@@ -11,10 +11,6 @@ public class AirPurificationSystemServer extends AirPurificationSystemGrpc.AirPu
     // create logger object for logging
     private static final Logger logger = Logger.getLogger(AirPurificationSystemServer.class.getName());
 
-    // set initial state of purification system to off
-    // real world would see this state pulled from the actual hardware
-    private String systemState = "off";
-
     public static void main(String[] args) throws IOException {
 
 
@@ -60,9 +56,10 @@ public class AirPurificationSystemServer extends AirPurificationSystemGrpc.AirPu
             case "med":
             case "high":
                 // user request to update speed of the air purification system
-                systemState = speed;
+                // set initial state of purification system to off
+                // real world would see this state pulled from the actual hardware
                 reply.setResponseCode(1).setSpeed(speed);
-                logger.info("The air purification system has been set to: " + systemState);
+                logger.info("The air purification system has been set to: " + speed);
                 break;
             default:
                 // set response code to 99 if invalid input - error handling can be done based on this response code

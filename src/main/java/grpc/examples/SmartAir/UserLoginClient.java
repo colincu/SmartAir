@@ -5,6 +5,7 @@ import io.grpc.ManagedChannelBuilder;
 
 public class UserLoginClient {
 
+    // instantiate the stub class
     private static UserLoginServiceGrpc.UserLoginServiceBlockingStub blockingStub;
 
     public static void main(String[] args) {
