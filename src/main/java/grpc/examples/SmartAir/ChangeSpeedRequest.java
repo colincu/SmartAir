@@ -5,7 +5,7 @@ package grpc.examples.SmartAir;
 
 /**
  * <pre>
- * The request message containing the requested speed low/med/high
+ * The request message containing the requested speed off/low/med/high
  * </pre>
  *
  * Protobuf type {@code SmartAir.ChangeSpeedRequest}
@@ -276,7 +276,7 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * The request message containing the requested speed low/med/high
+   * The request message containing the requested speed off/low/med/high
    * </pre>
    *
    * Protobuf type {@code SmartAir.ChangeSpeedRequest}

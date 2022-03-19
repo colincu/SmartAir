@@ -13,7 +13,7 @@ service AirPurificationSystem{
 
 }
 
-// The request message containing the requested speed low/med/high
+// The request message containing the requested speed off/low/med/high
 message ChangeSpeedRequest {
   string speed = 1;
 }

@@ -40,7 +40,7 @@ public class AirPollutionMonitoringServer extends AirPollutionMonitoringGrpc.Air
 
     }
 
-    // Override userLogin method from AirPollutionMonitoringGrpc.AirPollutionMonitoringImplBase
+    // Override roomAirQuality method from AirPollutionMonitoringGrpc.AirPollutionMonitoringImplBase
     // this grpc method is Unary
     @Override
     public void roomAirQuality(AirQualityRequest request, StreamObserver<AirQualityReply> responseObserver) {
@@ -192,7 +192,7 @@ public class AirPollutionMonitoringServer extends AirPollutionMonitoringGrpc.Air
                         quality = 0;
                         break;
                 }
-                // kkep track of total so we can calculate the average
+                // keep track of total so we can calculate the average
                 total += quality;
             }
 
