@@ -24,6 +24,11 @@ public class AirGUI implements ActionListener {
     private static JButton airPollutionMonitoringButton;
     private static JButton purificationChangeSpeed;
     private static JButton purificationBackButton;
+    private static JButton monitoringRoomAirQuality;
+    private static JButton monitoringAllRoomAirQuality;
+    private static JButton monitoringRoomsAirQuality;
+    private static JButton monitoringAveRoomAirQuality;
+    private static JButton monitoringBackButton;
     private static JComboBox changeSpeed;
     private static String selectedSpeed;
     //needed to move these out of main method so we can modify them from outside main method
@@ -69,9 +74,8 @@ public class AirGUI implements ActionListener {
     }
 
 
-
-    //UI page to display the options to change the air purification system speed
-    public static void PurificationSystemPage() {
+    //after login page this page will offer a selection of the monitoring Ui actions
+    public static void SelectMonitoringOption() {
         // configure panel for GUI
         panel = new JPanel();
         panel.setLayout(null);
@@ -81,38 +85,37 @@ public class AirGUI implements ActionListener {
         // make frame visible
         frame.setVisible(true);
         // configure label for header, user,  pass and login button
-        loginHeader = new JLabel("Air Purification System - control page");
+        loginHeader = new JLabel("Air Pollution System - control page");
         loginHeader.setBounds(60, 20, 300, 40);
         panel.add(loginHeader);
 
-        JLabel currentStatus = new JLabel("Select speed " );
-        currentStatus.setBounds(20, 60, 300, 25);
-        panel.add(currentStatus);
+        monitoringRoomAirQuality = new JButton("RoomAirQuality");
+        monitoringRoomAirQuality.setBounds(40, 80, 180, 25);
+        monitoringRoomAirQuality.addActionListener(new AirGUI());
+        panel.add(monitoringRoomAirQuality);
 
-        //list of options to set the speed to
-        String options[] = {"off", "low", "med", "high"};
-        //drop down menu to select speed
-        changeSpeed = new JComboBox(options);
-        changeSpeed.setBounds(140, 60, 140, 25);
-        panel.add(changeSpeed);
+        monitoringAllRoomAirQuality = new JButton("AllRoomAirQuality");
+        monitoringAllRoomAirQuality.setBounds(240, 80, 180, 25);
+        monitoringAllRoomAirQuality.addActionListener(new AirGUI());
+        panel.add(monitoringAllRoomAirQuality);
 
-        //empty message that can be filled once we successfully modify the speed
-        speedChangeSuccess = new JLabel("");
-        speedChangeSuccess.setBounds(20, 100, 300, 25);
-        panel.add(speedChangeSuccess);
-        speedChangeSuccess.setText("");
+        monitoringRoomsAirQuality = new JButton("RoomsAirQuality");
+        monitoringRoomsAirQuality.setBounds(40, 120, 180, 25);
+        monitoringRoomsAirQuality.addActionListener(new AirGUI());
+        panel.add(monitoringRoomsAirQuality);
 
-        purificationChangeSpeed = new JButton("Set Speed");
-        purificationChangeSpeed.setBounds(40, 140, 140, 25);
-        purificationChangeSpeed.addActionListener(new AirGUI());
-        panel.add(purificationChangeSpeed);
+        monitoringAveRoomAirQuality = new JButton("AveRoomAirQuality");
+        monitoringAveRoomAirQuality.setBounds(240, 120, 180, 25);
+        monitoringAveRoomAirQuality.addActionListener(new AirGUI());
+        panel.add(monitoringAveRoomAirQuality);
 
-        purificationBackButton= new JButton("Back to menu");
-        purificationBackButton.setBounds(240, 140, 140, 25);
-        purificationBackButton.addActionListener(new AirGUI());
-        panel.add(purificationBackButton);
-
+        monitoringBackButton= new JButton("Back to menu");
+        monitoringBackButton.setBounds(40, 160, 140, 25);
+        monitoringBackButton.addActionListener(new AirGUI());
+        panel.add(monitoringBackButton);
     }
+
+
 
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -156,8 +159,8 @@ public class AirGUI implements ActionListener {
         else if (e.getSource() == airPollutionMonitoringButton){
             //remove old panel
             frame.remove(panel);
-            PollutionMonitoringPage();
-            logger.info("Successfully loaded the air pollution monitoring UI page");
+            SelectMonitoringOption();
+            logger.info("Successfully loaded the air pollution monitoring selection UI page");
         }
         else if (e.getSource() == airPurificationSystemButton){
             //remove old panel
@@ -171,13 +174,57 @@ public class AirGUI implements ActionListener {
             logger.info("Air purification system changed to: " + selectedSpeed);
             speedChangeSuccess.setText("Speed successfully changed to: " + selectedSpeed);
         }
-        else if (e.getSource() == purificationBackButton){
+        else if ((e.getSource() == purificationBackButton ) || (e.getSource() == monitoringBackButton)) {
             //remove old panel
             frame.remove(panel);
             //load new panel
             SelectPage();
             logger.info("Successfully loaded the select system UI page");
         }
+    }
+
+    //UI page to display the options to change the air purification system speed
+    public static void PurificationSystemPage() {
+        // configure panel for GUI
+        panel = new JPanel();
+        panel.setLayout(null);
+
+        // add panel to frame
+        frame.add(panel);
+        // make frame visible
+        frame.setVisible(true);
+        // configure label for header, user,  pass and login button
+        loginHeader = new JLabel("Air Purification System - control page");
+        loginHeader.setBounds(60, 20, 300, 40);
+        panel.add(loginHeader);
+
+        JLabel currentStatus = new JLabel("Select speed " );
+        currentStatus.setBounds(20, 60, 300, 25);
+        panel.add(currentStatus);
+
+        //list of options to set the speed to
+        String options[] = {"off", "low", "med", "high"};
+        //drop down menu to select speed
+        changeSpeed = new JComboBox(options);
+        changeSpeed.setBounds(140, 60, 140, 25);
+        panel.add(changeSpeed);
+
+        //empty message that can be filled once we successfully modify the speed
+        speedChangeSuccess = new JLabel("");
+        speedChangeSuccess.setBounds(20, 100, 300, 25);
+        panel.add(speedChangeSuccess);
+        speedChangeSuccess.setText("");
+
+        purificationChangeSpeed = new JButton("Set Speed");
+        purificationChangeSpeed.setBounds(40, 140, 140, 25);
+        purificationChangeSpeed.addActionListener(new AirGUI());
+        panel.add(purificationChangeSpeed);
+
+        purificationBackButton= new JButton("Back to menu");
+        purificationBackButton.setBounds(240, 140, 140, 25);
+        purificationBackButton.addActionListener(new AirGUI());
+        panel.add(purificationBackButton);
+
     }
 
     //after login page this page will offer a selection of the monitoring Ui or the UI to modify the air purification system
