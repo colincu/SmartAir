@@ -3,7 +3,14 @@ package grpc.examples.SmartAir;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.stub.StreamObserver;
+
+import javax.jmdns.JmDNS;
+import javax.jmdns.ServiceInfo;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.InetAddress;
+import java.util.Properties;
 
 public class UserLoginServer extends UserLoginServiceGrpc.UserLoginServiceImplBase {
 
@@ -12,8 +19,14 @@ public class UserLoginServer extends UserLoginServiceGrpc.UserLoginServiceImplBa
         System.out.println("The gRPC login server has started");
         UserLoginServer loginserver = new UserLoginServer();
 
+        //create instance of properties that loads in what we have defined in SmartAir.properties
+        Properties properties = loginserver.getProperties();
+
+        //register our server based on the properties defined
+        loginserver.registerService(properties);
+
         // Local tcp port that the service will listen for connections on
-        int port = 50555;
+        int port = Integer.valueOf(properties.getProperty("service_port"));
 
         // Try/Except block for exception handling if service fails to start listening
         try {
@@ -76,6 +89,64 @@ public class UserLoginServer extends UserLoginServiceGrpc.UserLoginServiceImplBa
 
         responseObserver.onNext(response.build());
         responseObserver.onCompleted();
+    }
+
+    private  void registerService(Properties prop) {
+
+        try {
+            // Create the JmDNS instance using local host IP address
+            JmDNS jmdns = JmDNS.create(InetAddress.getLocalHost());
+
+            // these variables are defined in the *.properties file under resources
+            String service_type = prop.getProperty("service_type") ;
+            String service_name = prop.getProperty("service_name")  ;
+            int service_port = Integer.valueOf( prop.getProperty("service_port") );
+            String service_description = prop.getProperty("service_description")  ;
+
+            // Register the login service
+            ServiceInfo serviceInfo = ServiceInfo.create(service_type, service_name, service_port, service_description);
+            jmdns.registerService(serviceInfo);
+
+            System.out.printf("Registering service with type %s and name %s \n", service_type, service_name);
+
+            // Wait a bit
+            Thread.sleep(1000);
+
+            // Unregister all services
+            //jmdns.unregisterAllServices();
+
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        } catch (InterruptedException e) {
+            // catch block
+            e.printStackTrace();
+        }
+
+    }
+
+    private Properties getProperties() {
+
+        Properties prop = null;
+
+        try (InputStream input = new FileInputStream("src/main/resources/SmartAir.properties")) {
+
+            prop = new Properties();
+
+            // load a properties file
+            prop.load(input);
+
+            // get the property value and print it out
+            System.out.println("Math Service properies ...");
+            System.out.println("\t service_type: " + prop.getProperty("service_type"));
+            System.out.println("\t service_name: " +prop.getProperty("service_name"));
+            System.out.println("\t service_description: " +prop.getProperty("service_description"));
+            System.out.println("\t service_port: " +prop.getProperty("service_port"));
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
+        return prop;
     }
 
 }
