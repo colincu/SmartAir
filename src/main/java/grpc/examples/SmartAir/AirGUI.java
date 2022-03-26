@@ -11,6 +11,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.jmdns.JmDNS;
+import javax.jmdns.ServiceInfo;
+
 public class AirGUI implements ActionListener {
     // create logger object for logging
     private static final Logger logger = Logger.getLogger(AirGUI.class.getName());
@@ -39,7 +42,6 @@ public class AirGUI implements ActionListener {
     private static JFrame frame;
 
     public static void main(String[] args) {
-
 
         //display login screen
         LoginScreen();
