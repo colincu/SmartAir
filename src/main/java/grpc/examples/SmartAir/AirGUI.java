@@ -196,6 +196,17 @@ public class AirGUI implements ActionListener {
             }
             logger.info("Air purification system changed to: " + reply.getSpeed());
             speedChangeSuccess.setText("Speed successfully changed to: " + selectedSpeed);
+            //rpc termination
+            // no new tasks will be accepted, starts orderly shutdown
+            changeSpeedChannel.shutdown();
+            // waits for all shutdown tasks to complete or the timeout, whichever is first
+            try {
+                changeSpeedChannel.awaitTermination(2, TimeUnit.SECONDS);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+            logger.info("Change speed communication channel successfully shutdown");
+
         }
         else if ((e.getSource() == purificationBackButton ) || (e.getSource() == monitoringBackButton)) {
             //remove old panel
