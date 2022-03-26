@@ -2,10 +2,13 @@ package grpc.examples.SmartAir;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.StatusRuntimeException;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class AirGUI implements ActionListener {
@@ -171,7 +174,27 @@ public class AirGUI implements ActionListener {
         }
         else if (e.getSource() == purificationChangeSpeed){
             selectedSpeed = (String) changeSpeed.getSelectedItem();
-            logger.info("Air purification system changed to: " + selectedSpeed);
+            //Create a channel for the connection
+            ManagedChannel changeSpeedChannel = ManagedChannelBuilder.forAddress("localhost", 50557).usePlaintext().build();
+            logger.info("Successfully set up the communication channel.");
+            AirPurificationSystemGrpc.AirPurificationSystemBlockingStub blockingStub;
+            blockingStub = AirPurificationSystemGrpc.newBlockingStub(changeSpeedChannel);
+            //set request
+            ChangeSpeedRequest request = ChangeSpeedRequest.newBuilder().setSpeed(selectedSpeed).build();
+            // set reply
+            ChangeSpeedReply reply;
+            //error handling
+            try {
+                reply = blockingStub
+                        // setting a deadline 3 seconds from now for this to complete
+                        .withDeadlineAfter(3, TimeUnit.SECONDS)
+                        .changeSpeed(request);
+                logger.info("The air purification system has been set to : " + reply.getSpeed());
+            } catch (StatusRuntimeException err) {
+                logger.log(Level.WARNING, "Call to change speed failed: {0}", err.getStatus());
+                return;
+            }
+            logger.info("Air purification system changed to: " + reply.getSpeed());
             speedChangeSuccess.setText("Speed successfully changed to: " + selectedSpeed);
         }
         else if ((e.getSource() == purificationBackButton ) || (e.getSource() == monitoringBackButton)) {

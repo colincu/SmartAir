@@ -23,7 +23,7 @@ public class AirPurificationSystemClient {
         blockingStub = AirPurificationSystemGrpc.newBlockingStub(channel);
 
         // change the speed to med
-        ChangeSpeed();
+        ChangeSpeed("med");
 
         //rpc termination
         // no new tasks will be accepted, starts orderly shutdown
@@ -32,9 +32,9 @@ public class AirPurificationSystemClient {
         channel.awaitTermination(2, TimeUnit.SECONDS);
     }
 
-    public static void ChangeSpeed(){
+    public static void ChangeSpeed(String speed){
         //change speed to med
-        ChangeSpeedRequest request = ChangeSpeedRequest.newBuilder().setSpeed("med").build();
+        ChangeSpeedRequest request = ChangeSpeedRequest.newBuilder().setSpeed(speed).build();
 
         //set reply
         ChangeSpeedReply reply;
