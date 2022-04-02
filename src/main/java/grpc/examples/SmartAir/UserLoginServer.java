@@ -111,7 +111,11 @@ public class UserLoginServer extends UserLoginServiceGrpc.UserLoginServiceImplBa
             ServiceInfo loginServiceInfo = ServiceInfo.create(service_type, service_name, service_port, service_description);
             jmdnsLoginServer.registerService(loginServiceInfo);
 
-            System.out.printf("Registering service with type %s and name %s \n", service_type, service_name);
+            // Code to validate the service is being registered
+            Thread.sleep(25000);
+            ServiceInfo info = jmdnsLoginServer.getServiceInfo(service_type, service_name, 5000);
+            System.out.println("Details of the service that was registered " + info);
+
 
             // Wait a bit
             Thread.sleep(1000);
