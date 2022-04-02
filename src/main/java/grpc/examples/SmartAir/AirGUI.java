@@ -3,11 +3,13 @@ package grpc.examples.SmartAir;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
+import io.grpc.stub.StreamObserver;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Iterator;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,6 +35,11 @@ public class AirGUI implements ActionListener {
     private static JLabel selectAllRoomAirQualitySuccess2;
     private static JLabel selectAllRoomAirQualitySuccess3;
     private static JLabel selectAllRoomAirQualitySuccess4;
+    private static JLabel selectRoomsAirQualitySuccess1;
+    private static JLabel selectRoomsAirQualitySuccess2;
+    private static JLabel selectRoomsAirQualitySuccess3;
+    private static JLabel selectRoomsAirQualitySuccess4;
+    private static JLabel selectAveRoomAirQualitySuccess;
     private static JTextField userText;
     private static JPasswordField passText;
     private static JButton loginButton;
@@ -59,6 +66,10 @@ public class AirGUI implements ActionListener {
     private static String selectedSpeed;
     private static String selectedRoom;
     private static String selectedAllRoom;
+    private static JCheckBox room1;
+    private static JCheckBox room2;
+    private static JCheckBox room3;
+    private static JCheckBox room4;
     //needed to move these out of main method so we can modify them from outside main method
     private static JPanel panel;
     private static JFrame frame;
@@ -235,7 +246,9 @@ public class AirGUI implements ActionListener {
         else if ((e.getSource() == purificationBackButton ) ||
                 (e.getSource() == monitoringBackButton) ||
                 (e.getSource() == roomAirQualityBackButton) ||
-                (e.getSource()) == allRoomAirQualityBackButton) {
+                (e.getSource() == allRoomAirQualityBackButton) ||
+                (e.getSource() == roomsAirQualityBackButton) ||
+                (e.getSource() == aveRoomAirQualityBackButton)){
             //remove old panel
             frame.remove(panel);
             //load new panel
@@ -254,7 +267,21 @@ public class AirGUI implements ActionListener {
             frame.remove(panel);
             //load new panel
             AllRoomAirQualityPage();
-            logger.info("Successfully loaded the Room Air Quality page");
+            logger.info("Successfully loaded the All Room Air Quality page");
+        }
+        else if ((e.getSource() == monitoringRoomsAirQuality )){
+            //remove old panel
+            frame.remove(panel);
+            //load new panel
+            RoomsAirQualityPage();
+            logger.info("Successfully loaded the Rooms Air Quality page");
+        }
+        else if ((e.getSource() == monitoringAveRoomAirQuality )){
+            //remove old panel
+            frame.remove(panel);
+            //load new panel
+            AveRoomAirQualityPage();
+            logger.info("Successfully loaded the Average Rooms Air Quality page");
         }
         else if (e.getSource() == buttonSelectRoomAirQuality){
             //get the selected room from the combo box in the UI
@@ -316,16 +343,16 @@ public class AirGUI implements ActionListener {
                     AirQualityReply reply = replies.next();
                     logger.info("The air quality of the selected room is: " + reply.getQuality());
                     if (counter == 0) {
-                        selectAllRoomAirQualitySuccess1.setText("The air quality of the selected room is: " + reply.getQuality());
+                        selectAllRoomAirQualitySuccess1.setText("The air quality of the room 1 is: " + reply.getQuality());
                     }
                     else if (counter ==1){
-                        selectAllRoomAirQualitySuccess2.setText("The air quality of the selected room is: " + reply.getQuality());
+                        selectAllRoomAirQualitySuccess2.setText("The air quality of the room 2 is: " + reply.getQuality());
                     }
                     else if (counter ==2){
-                        selectAllRoomAirQualitySuccess3.setText("The air quality of the selected room is: " + reply.getQuality());
+                        selectAllRoomAirQualitySuccess3.setText("The air quality of the room 3 is: " + reply.getQuality());
                     }
                     else {
-                        selectAllRoomAirQualitySuccess4.setText("The air quality of the selected room is: " + reply.getQuality());
+                        selectAllRoomAirQualitySuccess4.setText("The air quality of the room 4 is: " + reply.getQuality());
                     }
                     counter = counter +1;
                 }
@@ -341,6 +368,158 @@ public class AirGUI implements ActionListener {
             // waits for all shutdown tasks to complete or the timeout, whichever is first
             try {
                 selectedAllRoomChannel.awaitTermination(2, TimeUnit.SECONDS);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+            logger.info("Select room air quality communication channel successfully shutdown");
+
+        }
+        //show selected rooms air quality
+        else if (e.getSource() == buttonSelectRoomsAirQuality){
+            //Create a channel for the connection
+            ManagedChannel selectedRoomsChannel = ManagedChannelBuilder.forAddress("localhost", 50556).usePlaintext().build();
+            logger.info("Successfully set up the communication channel.");
+            AirPollutionMonitoringGrpc.AirPollutionMonitoringStub nonBlockingStub;
+            nonBlockingStub = AirPollutionMonitoringGrpc.newStub(selectedRoomsChannel);
+            //reply stream observer
+            StreamObserver<AirQualityReply> responseObserver = new StreamObserver<AirQualityReply>() {
+                @Override
+                public void onNext(AirQualityReply value) {
+                    //System.out.println("Air quality for selected room is " + value.getQuality());
+                    if (room1.isSelected()) {
+                        selectRoomsAirQualitySuccess1.setText("The air quality of the room 1 is: " + value.getQuality());
+                    }
+                    if (room2.isSelected()){
+                        selectRoomsAirQualitySuccess2.setText("The air quality of the room 2 is: " + value.getQuality());
+                    }
+                    if (room3.isSelected()){
+                        selectRoomsAirQualitySuccess3.setText("The air quality of the room 3 is: " + value.getQuality());
+                    }
+                    if (room4.isSelected()) {
+                        selectRoomsAirQualitySuccess4.setText("The air quality of the room 4 is: " + value.getQuality());
+                    }
+                }
+                @Override
+                public void onError(Throwable t) {
+                    //
+                }
+                @Override
+                public void onCompleted() {
+                    logger.info("Server has finished processing streams.");
+                }
+            };
+            //set request
+            StreamObserver<AirQualityRequest> requestObserver =
+                    nonBlockingStub.roomsAirQuality(responseObserver);
+            try {
+                // Sleep for some time before sending the next one.
+                Thread.sleep(new Random().nextInt(900) + 400);
+                if(room1.isSelected()) {
+                    requestObserver.onNext(AirQualityRequest.newBuilder().setRoom("1").build());
+                }
+                // Sleep for some time before sending the next one.
+                Thread.sleep(new Random().nextInt(900) + 400);
+                if(room2.isSelected()) {
+                    requestObserver.onNext(AirQualityRequest.newBuilder().setRoom("2").build());
+                }
+                // Sleep for a bit before sending the next one.
+                Thread.sleep(new Random().nextInt(900) + 400);
+                if(room3.isSelected()) {
+                    requestObserver.onNext(AirQualityRequest.newBuilder().setRoom("3").build());
+                }
+                // Sleep for a bit before sending the next one.
+                Thread.sleep(new Random().nextInt(900) + 400);
+                if(room4.isSelected()) {
+                    requestObserver.onNext(AirQualityRequest.newBuilder().setRoom("4").build());
+                }
+
+                logger.info("Sending messages...");
+
+                // end of requests
+                requestObserver.onCompleted();
+
+            } catch (RuntimeException e3) {
+                e3.printStackTrace();
+            } catch (InterruptedException e3) {
+                e3.printStackTrace();
+            }
+            //rpc termination
+            // no new tasks will be accepted, starts orderly shutdown
+            selectedRoomsChannel.shutdown();
+            // waits for all shutdown tasks to complete or the timeout, whichever is first
+            try {
+                selectedRoomsChannel.awaitTermination(2, TimeUnit.SECONDS);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+            logger.info("Select room air quality communication channel successfully shutdown");
+
+        }
+        //show selected rooms average air quality
+        else if (e.getSource() == buttonSelectAveRoomAirQuality){
+            //Create a channel for the connection
+            ManagedChannel selectedAveRoomChannel = ManagedChannelBuilder.forAddress("localhost", 50556).usePlaintext().build();
+            logger.info("Successfully set up the communication channel.");
+            AirPollutionMonitoringGrpc.AirPollutionMonitoringStub nonBlockingStub;
+            nonBlockingStub = AirPollutionMonitoringGrpc.newStub(selectedAveRoomChannel);
+            //reply stream observer
+            StreamObserver<AveAirQualityReply> responseObserver = new StreamObserver<AveAirQualityReply>() {
+                @Override
+                public void onNext(AveAirQualityReply value) {
+                    //System.out.println("Air quality for selected room is " + value.getQuality());
+                    selectAveRoomAirQualitySuccess.setText("The average air quality is: " + value.getQuality());
+
+                }
+                @Override
+                public void onError(Throwable t) {
+                    //
+                }
+                @Override
+                public void onCompleted() {
+                    logger.info("Server has finished processing streams.");
+                }
+            };
+            //set request
+            StreamObserver<AirQualityRequest> requestObserver =
+                    nonBlockingStub.aveRoomAirQuality(responseObserver);
+            try {
+                // Sleep for some time before sending the next one.
+                Thread.sleep(new Random().nextInt(900) + 400);
+                if(room1.isSelected()) {
+                    requestObserver.onNext(AirQualityRequest.newBuilder().setRoom("1").build());
+                }
+                // Sleep for some time before sending the next one.
+                Thread.sleep(new Random().nextInt(900) + 400);
+                if(room2.isSelected()) {
+                    requestObserver.onNext(AirQualityRequest.newBuilder().setRoom("2").build());
+                }
+                // Sleep for a bit before sending the next one.
+                Thread.sleep(new Random().nextInt(900) + 400);
+                if(room3.isSelected()) {
+                    requestObserver.onNext(AirQualityRequest.newBuilder().setRoom("3").build());
+                }
+                // Sleep for a bit before sending the next one.
+                Thread.sleep(new Random().nextInt(900) + 400);
+                if(room4.isSelected()) {
+                    requestObserver.onNext(AirQualityRequest.newBuilder().setRoom("4").build());
+                }
+
+                logger.info("Sending messages...");
+
+                // end of requests
+                requestObserver.onCompleted();
+
+            } catch (RuntimeException e3) {
+                e3.printStackTrace();
+            } catch (InterruptedException e3) {
+                e3.printStackTrace();
+            }
+            //rpc termination
+            // no new tasks will be accepted, starts orderly shutdown
+            selectedAveRoomChannel.shutdown();
+            // waits for all shutdown tasks to complete or the timeout, whichever is first
+            try {
+                selectedAveRoomChannel.awaitTermination(2, TimeUnit.SECONDS);
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }
@@ -562,14 +741,128 @@ public class AirGUI implements ActionListener {
         selectAllRoomAirQualitySuccess4.setText("");
 
         buttonSelectAllRoomAirQuality = new JButton("Show all Room's Air Quality");
-        buttonSelectAllRoomAirQuality.setBounds(40, 180, 140, 25);
+        buttonSelectAllRoomAirQuality.setBounds(40, 180, 240, 25);
         buttonSelectAllRoomAirQuality.addActionListener(new AirGUI());
         panel.add(buttonSelectAllRoomAirQuality);
 
         allRoomAirQualityBackButton= new JButton("Back to menu");
-        allRoomAirQualityBackButton.setBounds(240, 180, 140, 25);
+        allRoomAirQualityBackButton.setBounds(340, 180, 140, 25);
         allRoomAirQualityBackButton.addActionListener(new AirGUI());
         panel.add(allRoomAirQualityBackButton);
+
+    }
+    //UI page to display the options select certain room and have their air quality returned
+    public static void RoomsAirQualityPage() {
+        // configure panel for GUI
+        panel = new JPanel();
+        panel.setLayout(null);
+
+        // add panel to frame
+        frame.add(panel);
+        // make frame visible
+        frame.setVisible(true);
+        // configure label for header, user,  pass and login button
+        roomsAirQualityHeader = new JLabel("Select Specific Room's Air Quality - monitor page");
+        roomsAirQualityHeader.setBounds(60, 20, 400, 40);
+        panel.add(roomsAirQualityHeader);
+
+        JLabel roomsAirQualitySelectRoom = new JLabel("Select the room's you wish to query: " );
+        roomsAirQualitySelectRoom.setBounds(20, 60, 300, 25);
+        panel.add(roomsAirQualitySelectRoom);
+
+        room1 = new JCheckBox("Room 1");
+        room1.setBounds(240, 60, 140, 25);
+        panel.add(room1);
+        room2 = new JCheckBox("Room 2");
+        room2.setBounds(240, 80, 140, 25);
+        panel.add(room2);
+        room3 = new JCheckBox("Room 3");
+        room3.setBounds(240, 100, 140, 25);
+        panel.add(room3);
+        room4 = new JCheckBox("Room 4");
+        room4.setBounds(240, 120, 140, 25);
+        panel.add(room4);
+
+        //empty message that can be filled once we successfully a room to request air quality from
+        selectRoomsAirQualitySuccess1 = new JLabel("");
+        selectRoomsAirQualitySuccess1.setBounds(20, 140, 300, 25);
+        panel.add(selectRoomsAirQualitySuccess1);
+        selectRoomsAirQualitySuccess1.setText("");
+
+        selectRoomsAirQualitySuccess2 = new JLabel("");
+        selectRoomsAirQualitySuccess2.setBounds(20, 160, 300, 25);
+        panel.add(selectRoomsAirQualitySuccess2);
+        selectRoomsAirQualitySuccess2.setText("");
+
+        selectRoomsAirQualitySuccess3 = new JLabel("");
+        selectRoomsAirQualitySuccess3.setBounds(20, 180, 300, 25);
+        panel.add(selectRoomsAirQualitySuccess3);
+        selectRoomsAirQualitySuccess3.setText("");
+
+        selectRoomsAirQualitySuccess4 = new JLabel("");
+        selectRoomsAirQualitySuccess4.setBounds(20, 200, 300, 25);
+        panel.add(selectRoomsAirQualitySuccess4);
+        selectRoomsAirQualitySuccess4.setText("");
+
+        buttonSelectRoomsAirQuality = new JButton("Show selected Room's Air Quality");
+        buttonSelectRoomsAirQuality.setBounds(40, 240, 240, 25);
+        buttonSelectRoomsAirQuality.addActionListener(new AirGUI());
+        panel.add(buttonSelectRoomsAirQuality);
+
+        roomsAirQualityBackButton= new JButton("Back to menu");
+        roomsAirQualityBackButton.setBounds(340, 240, 140, 25);
+        roomsAirQualityBackButton.addActionListener(new AirGUI());
+        panel.add(roomsAirQualityBackButton);
+
+    }
+    //UI page to display the options select certain room and have their ave air quality returned
+    public static void AveRoomAirQualityPage() {
+        // configure panel for GUI
+        panel = new JPanel();
+        panel.setLayout(null);
+
+        // add panel to frame
+        frame.add(panel);
+        // make frame visible
+        frame.setVisible(true);
+        // configure label for header, user,  pass and login button
+        aveRoomAirQualityHeader = new JLabel("Average Room's Air Quality - monitor page");
+        aveRoomAirQualityHeader.setBounds(60, 20, 400, 40);
+        panel.add(aveRoomAirQualityHeader);
+
+        JLabel aveRoomAirQualitySelectRoom = new JLabel("Select the room's to get average: " );
+        aveRoomAirQualitySelectRoom.setBounds(20, 60, 300, 25);
+        panel.add(aveRoomAirQualitySelectRoom);
+
+        room1 = new JCheckBox("Room 1");
+        room1.setBounds(240, 60, 140, 25);
+        panel.add(room1);
+        room2 = new JCheckBox("Room 2");
+        room2.setBounds(240, 80, 140, 25);
+        panel.add(room2);
+        room3 = new JCheckBox("Room 3");
+        room3.setBounds(240, 100, 140, 25);
+        panel.add(room3);
+        room4 = new JCheckBox("Room 4");
+        room4.setBounds(240, 120, 140, 25);
+        panel.add(room4);
+
+        //empty message that can be filled once we successfully a room to request air quality from
+        selectAveRoomAirQualitySuccess = new JLabel("");
+        selectAveRoomAirQualitySuccess.setBounds(20, 140, 300, 25);
+        panel.add(selectAveRoomAirQualitySuccess);
+        selectAveRoomAirQualitySuccess.setText("");
+
+
+        buttonSelectAveRoomAirQuality = new JButton("Show Average Air Quality");
+        buttonSelectAveRoomAirQuality.setBounds(40, 240, 240, 25);
+        buttonSelectAveRoomAirQuality.addActionListener(new AirGUI());
+        panel.add(buttonSelectAveRoomAirQuality);
+
+        aveRoomAirQualityBackButton= new JButton("Back to menu");
+        aveRoomAirQualityBackButton.setBounds(340, 240, 140, 25);
+        aveRoomAirQualityBackButton.addActionListener(new AirGUI());
+        panel.add(aveRoomAirQualityBackButton);
 
     }
 }
