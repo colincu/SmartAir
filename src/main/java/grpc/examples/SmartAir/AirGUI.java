@@ -80,7 +80,7 @@ public class AirGUI implements ActionListener {
     private static JFrame frame;
     //service
     private static ServiceInfo loginServiceInfo;
-    private ServiceInfo monitoringServiceInfo;
+    private static ServiceInfo monitoringServiceInfo;
     private ServiceInfo systemServiceInfo;
 
     //start the application
@@ -88,6 +88,9 @@ public class AirGUI implements ActionListener {
         //discover login service
         String login_server_type = "_userLogin._tcp.local.";
         discoverLoginService(login_server_type);
+        //discover monitoring service
+        String monit_server_type = "_monitoring._tcp.local.";
+        discoverMonitService(monit_server_type);
 
 
         //display login screen
@@ -913,6 +916,40 @@ public class AirGUI implements ActionListener {
             Thread.sleep(2000);
             //close
             jmdnsDiscoverLogin.close();
+
+        } catch (UnknownHostException e4){
+            System.out.println(e4.getMessage());
+        } catch (IOException e4){
+            System.out.println(e4.getMessage());
+        } catch (InterruptedException e4){
+            e4.printStackTrace();
+        }
+    }
+    private static void discoverMonitService(String service_type){
+        try {
+            //create jmdns instance
+            JmDNS jmdnsDiscoverMonit = JmDNS.create(InetAddress.getLocalHost());
+            //add listener
+            jmdnsDiscoverMonit.addServiceListener(service_type, new ServiceListener() {
+                @Override
+                public void serviceAdded(ServiceEvent event) {
+                    System.out.println("Monitoring service added " + event.getInfo());
+                }
+                @Override
+                public void serviceRemoved(ServiceEvent event){
+                    System.out.println("Monitoring server removed: " + event.getInfo());
+                }
+                @Override
+                public void serviceResolved(ServiceEvent event) {
+                    System.out.println("Monitoring server resolved: " + event.getInfo());
+                    monitoringServiceInfo = event.getInfo();
+                }
+            });
+
+            //Wait for a while
+            Thread.sleep(2000);
+            //close
+            jmdnsDiscoverMonit.close();
 
         } catch (UnknownHostException e4){
             System.out.println(e4.getMessage());
