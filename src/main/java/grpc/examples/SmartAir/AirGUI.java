@@ -5,9 +5,14 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 
+import javax.jmdns.ServiceEvent;
+import javax.jmdns.ServiceListener;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -73,8 +78,17 @@ public class AirGUI implements ActionListener {
     //needed to move these out of main method so we can modify them from outside main method
     private static JPanel panel;
     private static JFrame frame;
+    //service
+    private static ServiceInfo loginServiceInfo;
+    private ServiceInfo monitoringServiceInfo;
+    private ServiceInfo systemServiceInfo;
 
+    //start the application
     public static void main(String[] args) {
+        //discover login service
+        String login_server_type = "_userLogin._tcp.local.";
+        discoverLoginService(login_server_type);
+
 
         //display login screen
         LoginScreen();
@@ -159,13 +173,19 @@ public class AirGUI implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         //if login button pressed...
         if (e.getSource() == loginButton) {
+            //login server vars
+            String host = loginServiceInfo.getHostAddresses()[0];
+            int port = loginServiceInfo.getPort();
             // get username entered in textbox
             String user = userText.getText();
             String pass = passText.getText();
             System.out.println(user + " " + pass);
 
-            // Creating channel for connection
-            ManagedChannel loginChannel = ManagedChannelBuilder.forAddress("localhost", 50555).usePlaintext().build();
+            // Creating channel for connection with fallback if discovery fails on macOS
+
+            ManagedChannel loginChannel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
+            logger.info("Channel created with jmDNS discovered server details");
+
             logger.info("Successfully set up the communication channel.");
             UserLoginServiceGrpc.UserLoginServiceBlockingStub blockingStub;
             blockingStub = UserLoginServiceGrpc.newBlockingStub(loginChannel);
@@ -864,6 +884,43 @@ public class AirGUI implements ActionListener {
         aveRoomAirQualityBackButton.addActionListener(new AirGUI());
         panel.add(aveRoomAirQualityBackButton);
 
+    }
+    /**
+     * jmDNS discovery service methods
+     */
+    private static void discoverLoginService(String service_type){
+        try {
+            //create jmdns instance
+            JmDNS jmdnsDiscoverLogin = JmDNS.create(InetAddress.getLocalHost());
+            //add listener
+            jmdnsDiscoverLogin.addServiceListener(service_type, new ServiceListener() {
+                @Override
+                public void serviceAdded(ServiceEvent event) {
+                    System.out.println("Login service added " + event.getInfo());
+                }
+                @Override
+                public void serviceRemoved(ServiceEvent event){
+                    System.out.println("Login server removed: " + event.getInfo());
+                }
+                @Override
+                public void serviceResolved(ServiceEvent event) {
+                    System.out.println("Login server resolved: " + event.getInfo());
+                    loginServiceInfo = event.getInfo();
+                }
+            });
+
+            //Wait for a while
+            Thread.sleep(2000);
+            //close
+            jmdnsDiscoverLogin.close();
+
+        } catch (UnknownHostException e4){
+            System.out.println(e4.getMessage());
+        } catch (IOException e4){
+            System.out.println(e4.getMessage());
+        } catch (InterruptedException e4){
+            e4.printStackTrace();
+        }
     }
 }
 
