@@ -104,8 +104,8 @@ public class UserLoginServer extends UserLoginServiceGrpc.UserLoginServiceImplBa
             String service_description = prop.getProperty("service_description")  ;
 
             // Register the login service
-            ServiceInfo serviceInfo = ServiceInfo.create(service_type, service_name, service_port, service_description);
-            jmdns.registerService(serviceInfo);
+            ServiceInfo loginServiceInfo = ServiceInfo.create(service_type, service_name, service_port, service_description);
+            jmdns.registerService(loginServiceInfo);
 
             System.out.printf("Registering service with type %s and name %s \n", service_type, service_name);
 
@@ -136,7 +136,7 @@ public class UserLoginServer extends UserLoginServiceGrpc.UserLoginServiceImplBa
             prop.load(input);
 
             // get the property value and print it out
-            System.out.println("Math Service properies ...");
+            System.out.println("Login Service properies ...");
             System.out.println("\t service_type: " + prop.getProperty("service_type"));
             System.out.println("\t service_name: " +prop.getProperty("service_name"));
             System.out.println("\t service_description: " +prop.getProperty("service_description"));

@@ -21,22 +21,37 @@ public class AirGUI implements ActionListener {
     private boolean loggedIn = false;
     // GUI elements for login screen
     private static JLabel loginHeader;
+    private static JLabel roomAirQualityHeader;
+    private static JLabel allRoomAirQualityHeader;
+    private static JLabel roomsAirQualityHeader;
+    private static JLabel aveRoomAirQualityHeader;
     private static JLabel failure;
     private static JLabel speedChangeSuccess;
+    private static JLabel selectRoomAirQualitySuccess;
     private static JTextField userText;
     private static JPasswordField passText;
     private static JButton loginButton;
     private static JButton airPurificationSystemButton;
     private static JButton airPollutionMonitoringButton;
     private static JButton purificationChangeSpeed;
+    private static JButton buttonSelectRoomAirQuality;
+    private static JButton buttonSelectAllRoomAirQuality;
+    private static JButton buttonSelectRoomsAirQuality;
+    private static JButton buttonSelectAveRoomAirQuality;
     private static JButton purificationBackButton;
     private static JButton monitoringRoomAirQuality;
     private static JButton monitoringAllRoomAirQuality;
     private static JButton monitoringRoomsAirQuality;
     private static JButton monitoringAveRoomAirQuality;
     private static JButton monitoringBackButton;
+    private static JButton roomAirQualityBackButton;
+    private static JButton allRoomAirQualityBackButton;
+    private static JButton roomsAirQualityBackButton;
+    private static JButton aveRoomAirQualityBackButton;
     private static JComboBox changeSpeed;
+    private static JComboBox selectRoomAirQualityRoom;
     private static String selectedSpeed;
+    private static String selectedRoom;
     //needed to move these out of main method so we can modify them from outside main method
     private static JPanel panel;
     private static JFrame frame;
@@ -121,7 +136,7 @@ public class AirGUI implements ActionListener {
     }
 
 
-
+    //logic performed when particular buttons clicked
     @Override
     public void actionPerformed(ActionEvent e) {
         //if login button pressed...
@@ -210,12 +225,58 @@ public class AirGUI implements ActionListener {
             logger.info("Change speed communication channel successfully shutdown");
 
         }
-        else if ((e.getSource() == purificationBackButton ) || (e.getSource() == monitoringBackButton)) {
+        else if ((e.getSource() == purificationBackButton ) ||
+                (e.getSource() == monitoringBackButton) ||
+                (e.getSource() == roomAirQualityBackButton)) {
             //remove old panel
             frame.remove(panel);
             //load new panel
             SelectPage();
             logger.info("Successfully loaded the select system UI page");
+        }
+        else if ((e.getSource() == monitoringRoomAirQuality )){
+            //remove old panel
+            frame.remove(panel);
+            //load new panel
+            RoomAirQualityPage();
+            logger.info("Successfully loaded the Room Air Quality page");
+        }
+        else if (e.getSource() == buttonSelectRoomAirQuality){
+            //get the selected room from the combo box in the UI
+            selectedRoom = (String) selectRoomAirQualityRoom.getSelectedItem();
+            //Create a channel for the connection
+            ManagedChannel selectedRoomChannel = ManagedChannelBuilder.forAddress("localhost", 50556).usePlaintext().build();
+            logger.info("Successfully set up the communication channel.");
+            AirPollutionMonitoringGrpc.AirPollutionMonitoringBlockingStub blockingStub;
+            blockingStub = AirPollutionMonitoringGrpc.newBlockingStub(selectedRoomChannel);
+            //set request
+            AirQualityRequest request = AirQualityRequest.newBuilder().setRoom(selectedRoom).build();
+            // set reply
+            AirQualityReply reply;
+            //error handling
+            try {
+                reply = blockingStub
+                        // setting a deadline 3 seconds from now for this to complete
+                        .withDeadlineAfter(3, TimeUnit.SECONDS)
+                        .roomAirQuality(request);
+                logger.info("The air quality of the selected room is: " + reply.getQuality());
+            } catch (StatusRuntimeException err) {
+                logger.log(Level.WARNING, "Call to change speed failed: {0}", err.getStatus());
+                return;
+            }
+            logger.info("The air quality of the selected room is: " + reply.getQuality());
+            selectRoomAirQualitySuccess.setText("The air quality of the selected room is: " + reply.getQuality());
+            //rpc termination
+            // no new tasks will be accepted, starts orderly shutdown
+            selectedRoomChannel.shutdown();
+            // waits for all shutdown tasks to complete or the timeout, whichever is first
+            try {
+                selectedRoomChannel.awaitTermination(2, TimeUnit.SECONDS);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+            logger.info("Select room air quality communication channel successfully shutdown");
+
         }
     }
 
@@ -335,6 +396,52 @@ public class AirGUI implements ActionListener {
         passText = new JPasswordField(20);
         passText.setBounds(120, 100, 165, 25);
         panel.add(passText);
+
+    }
+
+    //UI page to display the options to change select Room Air quality
+    public static void RoomAirQualityPage() {
+        // configure panel for GUI
+        panel = new JPanel();
+        panel.setLayout(null);
+
+        // add panel to frame
+        frame.add(panel);
+        // make frame visible
+        frame.setVisible(true);
+        // configure label for header, user,  pass and login button
+        roomAirQualityHeader = new JLabel("Room Air Quality - monitor page");
+        roomAirQualityHeader.setBounds(60, 20, 300, 40);
+        panel.add(roomAirQualityHeader);
+
+        JLabel roomAirQualitySelectRoom = new JLabel("Select room " );
+        roomAirQualitySelectRoom.setBounds(20, 60, 300, 25);
+        panel.add(roomAirQualitySelectRoom);
+
+        //list of options to select one of teh 4 room
+        String roomOptions[] = {"1", "2", "3", "4"};
+        //drop down menu to select speed
+        selectRoomAirQualityRoom = new JComboBox(roomOptions);
+        selectRoomAirQualityRoom.setBounds(140, 60, 140, 25);
+        panel.add(selectRoomAirQualityRoom);
+
+
+        //empty message that can be filled once we successfully a room to request air quality from
+        selectRoomAirQualitySuccess = new JLabel("");
+        selectRoomAirQualitySuccess.setBounds(20, 100, 300, 25);
+        panel.add(selectRoomAirQualitySuccess);
+        selectRoomAirQualitySuccess.setText("");
+
+        buttonSelectRoomAirQuality = new JButton("Select Room");
+        buttonSelectRoomAirQuality.setBounds(40, 140, 140, 25);
+        buttonSelectRoomAirQuality.addActionListener(new AirGUI());
+        panel.add(buttonSelectRoomAirQuality);
+
+        roomAirQualityBackButton= new JButton("Back to menu");
+        roomAirQualityBackButton.setBounds(240, 140, 140, 25);
+        roomAirQualityBackButton.addActionListener(new AirGUI());
+        panel.add(roomAirQualityBackButton);
+
 
     }
 }
