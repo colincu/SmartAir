@@ -95,7 +95,11 @@ public class UserLoginServer extends UserLoginServiceGrpc.UserLoginServiceImplBa
 
         try {
             // Create the JmDNS instance using local host IP address
-            JmDNS jmdns = JmDNS.create(InetAddress.getLocalHost());
+            JmDNS jmdnsLoginServer = JmDNS.create(InetAddress.getLocalHost());
+            InetAddress jmsAddr = jmdnsLoginServer.getInterface();
+
+            System.out.println("Registration jmdns instance created: " + jmdnsLoginServer.getName());
+            System.out.println("Registration jmdns instance ip address: " + jmsAddr);
 
             // these variables are defined in the *.properties file under resources
             String service_type = prop.getProperty("service_type") ;
@@ -105,7 +109,7 @@ public class UserLoginServer extends UserLoginServiceGrpc.UserLoginServiceImplBa
 
             // Register the login service
             ServiceInfo loginServiceInfo = ServiceInfo.create(service_type, service_name, service_port, service_description);
-            jmdns.registerService(loginServiceInfo);
+            jmdnsLoginServer.registerService(loginServiceInfo);
 
             System.out.printf("Registering service with type %s and name %s \n", service_type, service_name);
 
