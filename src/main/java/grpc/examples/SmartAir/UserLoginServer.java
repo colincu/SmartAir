@@ -19,7 +19,7 @@ public class UserLoginServer extends UserLoginServiceGrpc.UserLoginServiceImplBa
         System.out.println("The gRPC login server has started");
         UserLoginServer loginserver = new UserLoginServer();
 
-        //create instance of properties that loads in what we have defined in SmartAir.properties
+        //create instance of properties that loads in what we have defined in SmartAirLogin.properties
         Properties properties = loginserver.getProperties();
 
         //register our server based on the properties defined
@@ -117,6 +117,7 @@ public class UserLoginServer extends UserLoginServiceGrpc.UserLoginServiceImplBa
             System.out.println("Details of the service that was registered " + info);
 
 
+
             // Wait a bit
             Thread.sleep(1000);
 
@@ -136,7 +137,7 @@ public class UserLoginServer extends UserLoginServiceGrpc.UserLoginServiceImplBa
 
         Properties prop = null;
 
-        try (InputStream input = new FileInputStream("src/main/resources/SmartAir.properties")) {
+        try (InputStream input = new FileInputStream("src/main/resources/SmartAirLogin.properties")) {
 
             prop = new Properties();
 

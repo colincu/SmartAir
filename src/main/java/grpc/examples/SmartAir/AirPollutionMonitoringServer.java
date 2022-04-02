@@ -3,7 +3,14 @@ package grpc.examples.SmartAir;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.stub.StreamObserver;
+
+import javax.jmdns.JmDNS;
+import javax.jmdns.ServiceInfo;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.InetAddress;
+import java.util.Properties;
 import java.util.logging.Logger;
 
 public class AirPollutionMonitoringServer extends AirPollutionMonitoringGrpc.AirPollutionMonitoringImplBase {
@@ -17,9 +24,12 @@ public class AirPollutionMonitoringServer extends AirPollutionMonitoringGrpc.Air
         // Print to screen to see the server has started
         System.out.println("The gRPC air pollution monitoring server has started");
         AirPollutionMonitoringServer monitoringServer = new AirPollutionMonitoringServer();
+        //service registration with jmdns
+        Properties prop = monitoringServer.getProperties();
+        monitoringServer.registerService(prop);
 
         // Local tcp port that the service will listen for connections on
-        int port = 50556;
+        int port = Integer.valueOf(prop.getProperty("service_port"));
 
         // Try/Except block for exception handling if service fails to start listening
         try {
@@ -211,6 +221,73 @@ public class AirPollutionMonitoringServer extends AirPollutionMonitoringGrpc.Air
                 responseObserver.onCompleted();
             }
         };
+    }
+
+    private  void registerService(Properties prop) {
+
+        try {
+            // Create the JmDNS instance using local host IP address
+            JmDNS jmdnsMonitServer = JmDNS.create(InetAddress.getLocalHost());
+            InetAddress jmsAddr = jmdnsMonitServer.getInterface();
+
+            System.out.println("Registration jmdns instance created: " + jmdnsMonitServer.getName());
+            System.out.println("Registration jmdns instance ip address: " + jmsAddr);
+
+            // these variables are defined in the *.properties file under resources
+            String service_type = prop.getProperty("service_type") ;
+            String service_name = prop.getProperty("service_name")  ;
+            int service_port = Integer.valueOf( prop.getProperty("service_port") );
+            String service_description = prop.getProperty("service_description")  ;
+
+            // Register the login service
+            ServiceInfo loginMonitInfo = ServiceInfo.create(service_type, service_name, service_port, service_description);
+            jmdnsMonitServer.registerService(loginMonitInfo);
+
+            // Code to validate the service is being registered
+            Thread.sleep(25000);
+            ServiceInfo info = jmdnsMonitServer.getServiceInfo(service_type, service_name, 5000);
+            System.out.println("Details of the service that was registered " + info);
+
+
+
+            // Wait a bit
+            Thread.sleep(1000);
+
+            // Unregister all services
+            //jmdns.unregisterAllServices();
+
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        } catch (InterruptedException e) {
+            // catch block
+            e.printStackTrace();
+        }
+
+    }
+
+    private Properties getProperties() {
+
+        Properties prop = null;
+
+        try (InputStream input = new FileInputStream("src/main/resources/SmartAirMonitoring.properties")) {
+
+            prop = new Properties();
+
+            // load a properties file
+            prop.load(input);
+
+            // get the property value and print it out
+            System.out.println("Login Service properies ...");
+            System.out.println("\t service_type: " + prop.getProperty("service_type"));
+            System.out.println("\t service_name: " +prop.getProperty("service_name"));
+            System.out.println("\t service_description: " +prop.getProperty("service_description"));
+            System.out.println("\t service_port: " +prop.getProperty("service_port"));
+
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+
+        return prop;
     }
 }
 
