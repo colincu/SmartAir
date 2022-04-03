@@ -145,7 +145,7 @@ public class UserLoginServer extends UserLoginServiceGrpc.UserLoginServiceImplBa
             prop.load(input);
 
             // get the property value and print it out
-            System.out.println("Login Service properies ...");
+            System.out.println("Login Service properties ...");
             System.out.println("\t service_type: " + prop.getProperty("service_type"));
             System.out.println("\t service_name: " +prop.getProperty("service_name"));
             System.out.println("\t service_description: " +prop.getProperty("service_description"));
