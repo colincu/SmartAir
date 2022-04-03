@@ -25,14 +25,8 @@ import javax.jmdns.ServiceInfo;
 public class AirGUI implements ActionListener {
     // create logger object for logging
     private static final Logger logger = Logger.getLogger(AirGUI.class.getName());
-
-    private boolean loggedIn = false;
     // GUI elements for login screen
     private static JLabel loginHeader;
-    private static JLabel roomAirQualityHeader;
-    private static JLabel allRoomAirQualityHeader;
-    private static JLabel roomsAirQualityHeader;
-    private static JLabel aveRoomAirQualityHeader;
     private static JLabel failure;
     private static JLabel speedChangeSuccess;
     private static JLabel selectRoomAirQualitySuccess;
@@ -68,9 +62,6 @@ public class AirGUI implements ActionListener {
     private static JComboBox changeSpeed;
     private static JComboBox selectRoomAirQualityRoom;
     private static JComboBox selectAllRoomAirQualityRoom;
-    private static String selectedSpeed;
-    private static String selectedRoom;
-    private static String selectedAllRoom;
     private static JCheckBox room1;
     private static JCheckBox room2;
     private static JCheckBox room3;
@@ -81,7 +72,7 @@ public class AirGUI implements ActionListener {
     //service
     private static ServiceInfo loginServiceInfo;
     private static ServiceInfo monitoringServiceInfo;
-    private ServiceInfo systemServiceInfo;
+    private static ServiceInfo systemServiceInfo;
 
     //start the application
     public static void main(String[] args) {
@@ -91,6 +82,9 @@ public class AirGUI implements ActionListener {
         //discover monitoring service
         String monit_server_type = "_monitoring._tcp.local.";
         discoverMonitService(monit_server_type);
+        //discover system service
+        String system_server_type = "_system._tcp.local.";
+        discoverSystemService(system_server_type);
 
 
         //display login screen
@@ -207,7 +201,6 @@ public class AirGUI implements ActionListener {
             //response code 1 from login server is successful login, code 99 is unsuccessful login
             if (responseCode == 1) {
                 logger.info("Successfully logged in..");
-                loggedIn = true;
                 //remove old panel
                 frame.remove(panel);
                 //load new panel
@@ -231,9 +224,12 @@ public class AirGUI implements ActionListener {
 
         }
         else if (e.getSource() == purificationChangeSpeed){
-            selectedSpeed = (String) changeSpeed.getSelectedItem();
-            //Create a channel for the connection
-            ManagedChannel changeSpeedChannel = ManagedChannelBuilder.forAddress("localhost", 50557).usePlaintext().build();
+            String selectedSpeed = (String) changeSpeed.getSelectedItem();
+            //system server variables
+            String host = systemServiceInfo.getHostAddresses()[0];
+            int port = systemServiceInfo.getPort();
+            //Create a channel for the connection using variables discovered about the system server
+            ManagedChannel changeSpeedChannel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
             logger.info("Successfully set up the communication channel.");
             AirPurificationSystemGrpc.AirPurificationSystemBlockingStub blockingStub;
             blockingStub = AirPurificationSystemGrpc.newBlockingStub(changeSpeedChannel);
@@ -308,7 +304,7 @@ public class AirGUI implements ActionListener {
         }
         else if (e.getSource() == buttonSelectRoomAirQuality){
             //get the selected room from the combo box in the UI
-            selectedRoom = (String) selectRoomAirQualityRoom.getSelectedItem();
+            String selectedRoom = (String) selectRoomAirQualityRoom.getSelectedItem();
             //Create a channel for the connection
             ManagedChannel selectedRoomChannel = ManagedChannelBuilder.forAddress("localhost", 50556).usePlaintext().build();
             logger.info("Successfully set up the communication channel.");
@@ -345,7 +341,7 @@ public class AirGUI implements ActionListener {
         }
         else if (e.getSource() == buttonSelectAllRoomAirQuality){
             //get the selected room from the combo box in the UI
-            selectedAllRoom = (String) selectAllRoomAirQualityRoom.getSelectedItem();
+            String selectedAllRoom = (String) selectAllRoomAirQualityRoom.getSelectedItem();
             //Create a channel for the connection
             ManagedChannel selectedAllRoomChannel = ManagedChannelBuilder.forAddress("localhost", 50556).usePlaintext().build();
             logger.info("Successfully set up the communication channel.");
@@ -461,9 +457,7 @@ public class AirGUI implements ActionListener {
                 // end of requests
                 requestObserver.onCompleted();
 
-            } catch (RuntimeException e3) {
-                e3.printStackTrace();
-            } catch (InterruptedException e3) {
+            } catch (RuntimeException | InterruptedException e3) {
                 e3.printStackTrace();
             }
             //rpc termination
@@ -532,9 +526,7 @@ public class AirGUI implements ActionListener {
                 // end of requests
                 requestObserver.onCompleted();
 
-            } catch (RuntimeException e3) {
-                e3.printStackTrace();
-            } catch (InterruptedException e3) {
+            } catch (RuntimeException | InterruptedException e3) {
                 e3.printStackTrace();
             }
             //rpc termination
@@ -681,7 +673,7 @@ public class AirGUI implements ActionListener {
         // make frame visible
         frame.setVisible(true);
         // configure label for header, user,  pass and login button
-        roomAirQualityHeader = new JLabel("Room Air Quality - monitor page");
+        JLabel roomAirQualityHeader = new JLabel("Room Air Quality - monitor page");
         roomAirQualityHeader.setBounds(60, 20, 300, 40);
         panel.add(roomAirQualityHeader);
 
@@ -726,7 +718,7 @@ public class AirGUI implements ActionListener {
         // make frame visible
         frame.setVisible(true);
         // configure label for header, user,  pass and login button
-        allRoomAirQualityHeader = new JLabel("All Room's Air Quality - monitor page");
+        JLabel allRoomAirQualityHeader = new JLabel("All Room's Air Quality - monitor page");
         allRoomAirQualityHeader.setBounds(60, 20, 300, 40);
         panel.add(allRoomAirQualityHeader);
 
@@ -785,7 +777,7 @@ public class AirGUI implements ActionListener {
         // make frame visible
         frame.setVisible(true);
         // configure label for header, user,  pass and login button
-        roomsAirQualityHeader = new JLabel("Select Specific Room's Air Quality - monitor page");
+        JLabel roomsAirQualityHeader = new JLabel("Select Specific Room's Air Quality - monitor page");
         roomsAirQualityHeader.setBounds(60, 20, 400, 40);
         panel.add(roomsAirQualityHeader);
 
@@ -849,7 +841,7 @@ public class AirGUI implements ActionListener {
         // make frame visible
         frame.setVisible(true);
         // configure label for header, user,  pass and login button
-        aveRoomAirQualityHeader = new JLabel("Average Room's Air Quality - monitor page");
+        JLabel aveRoomAirQualityHeader = new JLabel("Average Room's Air Quality - monitor page");
         aveRoomAirQualityHeader.setBounds(60, 20, 400, 40);
         panel.add(aveRoomAirQualityHeader);
 
@@ -950,6 +942,41 @@ public class AirGUI implements ActionListener {
             Thread.sleep(2000);
             //close
             jmdnsDiscoverMonit.close();
+
+        } catch (UnknownHostException e4){
+            System.out.println(e4.getMessage());
+        } catch (IOException e4){
+            System.out.println(e4.getMessage());
+        } catch (InterruptedException e4){
+            e4.printStackTrace();
+        }
+    }
+
+    private static void discoverSystemService(String service_type){
+        try {
+            //create jmdns instance
+            JmDNS jmdnsDiscoverSystem = JmDNS.create(InetAddress.getLocalHost());
+            //add listener
+            jmdnsDiscoverSystem.addServiceListener(service_type, new ServiceListener() {
+                @Override
+                public void serviceAdded(ServiceEvent event) {
+                    System.out.println("System service added " + event.getInfo());
+                }
+                @Override
+                public void serviceRemoved(ServiceEvent event){
+                    System.out.println("System server removed: " + event.getInfo());
+                }
+                @Override
+                public void serviceResolved(ServiceEvent event) {
+                    System.out.println("System server resolved: " + event.getInfo());
+                    systemServiceInfo = event.getInfo();
+                }
+            });
+
+            //Wait for a while
+            Thread.sleep(2000);
+            //close
+            jmdnsDiscoverSystem.close();
 
         } catch (UnknownHostException e4){
             System.out.println(e4.getMessage());
