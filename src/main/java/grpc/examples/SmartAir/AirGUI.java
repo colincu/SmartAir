@@ -26,53 +26,25 @@ public class AirGUI implements ActionListener {
     // create logger object for logging
     private static final Logger logger = Logger.getLogger(AirGUI.class.getName());
     // GUI elements for login screen
-    private static JLabel loginHeader;
-    private static JLabel failure;
-    private static JLabel speedChangeSuccess;
-    private static JLabel selectRoomAirQualitySuccess;
-    private static JLabel selectAllRoomAirQualitySuccess1;
-    private static JLabel selectAllRoomAirQualitySuccess2;
-    private static JLabel selectAllRoomAirQualitySuccess3;
-    private static JLabel selectAllRoomAirQualitySuccess4;
-    private static JLabel selectRoomsAirQualitySuccess1;
-    private static JLabel selectRoomsAirQualitySuccess2;
-    private static JLabel selectRoomsAirQualitySuccess3;
-    private static JLabel selectRoomsAirQualitySuccess4;
-    private static JLabel selectAveRoomAirQualitySuccess;
+    private static JLabel loginHeader, failure, speedChangeSuccess, selectRoomAirQualitySuccess,
+            selectAllRoomAirQualitySuccess1, selectAllRoomAirQualitySuccess2, selectAllRoomAirQualitySuccess3,
+            selectAllRoomAirQualitySuccess4, selectRoomsAirQualitySuccess1, selectRoomsAirQualitySuccess2,
+            selectRoomsAirQualitySuccess3, selectRoomsAirQualitySuccess4, selectAveRoomAirQualitySuccess;
     private static JTextField userText;
     private static JPasswordField passText;
-    private static JButton loginButton;
-    private static JButton airPurificationSystemButton;
-    private static JButton airPollutionMonitoringButton;
-    private static JButton purificationChangeSpeed;
-    private static JButton buttonSelectRoomAirQuality;
-    private static JButton buttonSelectAllRoomAirQuality;
-    private static JButton buttonSelectRoomsAirQuality;
-    private static JButton buttonSelectAveRoomAirQuality;
-    private static JButton purificationBackButton;
-    private static JButton monitoringRoomAirQuality;
-    private static JButton monitoringAllRoomAirQuality;
-    private static JButton monitoringRoomsAirQuality;
-    private static JButton monitoringAveRoomAirQuality;
-    private static JButton monitoringBackButton;
-    private static JButton roomAirQualityBackButton;
-    private static JButton allRoomAirQualityBackButton;
-    private static JButton roomsAirQualityBackButton;
-    private static JButton aveRoomAirQualityBackButton;
-    private static JComboBox changeSpeed;
-    private static JComboBox selectRoomAirQualityRoom;
-    private static JComboBox selectAllRoomAirQualityRoom;
-    private static JCheckBox room1;
-    private static JCheckBox room2;
-    private static JCheckBox room3;
-    private static JCheckBox room4;
+    private static JButton loginButton, airPurificationSystemButton, airPollutionMonitoringButton,
+            purificationChangeSpeed, buttonSelectRoomAirQuality, buttonSelectAllRoomAirQuality,
+            buttonSelectRoomsAirQuality, buttonSelectAveRoomAirQuality, purificationBackButton,
+            monitoringRoomAirQuality, monitoringAllRoomAirQuality, monitoringRoomsAirQuality,
+            monitoringAveRoomAirQuality, monitoringBackButton, roomAirQualityBackButton,
+            allRoomAirQualityBackButton, roomsAirQualityBackButton, aveRoomAirQualityBackButton;
+    private static JComboBox changeSpeed, selectRoomAirQualityRoom, selectAllRoomAirQualityRoom;
+    private static JCheckBox room1, room2, room3, room4;
     //needed to move these out of main method so we can modify them from outside main method
     private static JPanel panel;
     private static JFrame frame;
     //service
-    private static ServiceInfo loginServiceInfo;
-    private static ServiceInfo monitoringServiceInfo;
-    private static ServiceInfo systemServiceInfo;
+    private static ServiceInfo loginServiceInfo, monitoringServiceInfo, systemServiceInfo;
 
     //start the application
     public static void main(String[] args) {
@@ -86,42 +58,9 @@ public class AirGUI implements ActionListener {
         String system_server_type = "_system._tcp.local.";
         discoverSystemService(system_server_type);
 
-
         //display login screen
         LoginScreen();
-
-
     }
-
-    // Air pollution monitoring page
-    public static void PollutionMonitoringPage() {
-        // configure panel for GUI
-        panel = new JPanel();
-        panel.setLayout(null);
-
-        // add panel to frame
-        frame.add(panel);
-        // make frame visible
-        frame.setVisible(true);
-        // configure label for header, user,  pass and login button
-        loginHeader = new JLabel("Air Pollution Monitoring System");
-        loginHeader.setBounds(20, 20, 300, 40);
-        panel.add(loginHeader);
-
-        JLabel roomAirQuality = new JLabel("Enter room number for air quality reading..");
-        roomAirQuality.setBounds(20, 100, 300, 25);
-        panel.add(roomAirQuality);
-
-        JTextField roomAirQualityText = new JTextField(20);
-        roomAirQualityText.setBounds(340, 100, 40, 25);
-        panel.add(roomAirQualityText);
-
-        JButton roomAirQualityButton = new JButton("Get Room Air Quality");
-        roomAirQualityButton.setBounds(40, 180, 180, 25);
-        roomAirQualityButton.addActionListener(new AirGUI());
-        panel.add(roomAirQualityButton);
-    }
-
 
     //after login page this page will offer a selection of the monitoring Ui actions
     public static void SelectMonitoringOption() {
@@ -164,7 +103,6 @@ public class AirGUI implements ActionListener {
         panel.add(monitoringBackButton);
     }
 
-
     //logic performed when particular buttons clicked
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -178,18 +116,15 @@ public class AirGUI implements ActionListener {
             String pass = passText.getText();
             System.out.println(user + " " + pass);
 
-            // Creating channel for connection with fallback if discovery fails on macOS
-
+            // Creating channel for connection
             ManagedChannel loginChannel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
             logger.info("Channel created with jmDNS discovered server details");
-
             logger.info("Successfully set up the communication channel.");
             UserLoginServiceGrpc.UserLoginServiceBlockingStub blockingStub;
             blockingStub = UserLoginServiceGrpc.newBlockingStub(loginChannel);
             //call user login client and pass in collected parameters
             UserLoginResponse response = UserLoginClient.userLogin(user, pass, blockingStub);
             int responseCode = response.getResponseCode();
-
             //shut connection
             try {
                 UserLoginClient.shut(loginChannel);
@@ -563,7 +498,7 @@ public class AirGUI implements ActionListener {
         panel.add(currentStatus);
 
         //list of options to set the speed to
-        String options[] = {"off", "low", "med", "high"};
+        String[] options = {"off", "low", "med", "high"};
         //drop down menu to select speed
         changeSpeed = new JComboBox(options);
         changeSpeed.setBounds(140, 60, 140, 25);
@@ -682,7 +617,7 @@ public class AirGUI implements ActionListener {
         panel.add(roomAirQualitySelectRoom);
 
         //list of options to select one of teh 4 room
-        String roomOptions[] = {"1", "2", "3", "4"};
+        String[] roomOptions = {"1", "2", "3", "4"};
         //drop down menu to select speed
         selectRoomAirQualityRoom = new JComboBox(roomOptions);
         selectRoomAirQualityRoom.setBounds(140, 60, 140, 25);
@@ -727,7 +662,7 @@ public class AirGUI implements ActionListener {
         panel.add(allRoomAirQualitySelectRoom);
 
         //list of options to select one of teh 4 room
-        String allRoomOptions[] = {"All"};
+        String[] allRoomOptions = {"All"};
         //drop down menu to select speed
         selectAllRoomAirQualityRoom = new JComboBox(allRoomOptions);
         selectAllRoomAirQualityRoom.setBounds(140, 60, 140, 25);
@@ -909,8 +844,6 @@ public class AirGUI implements ActionListener {
             //close
             jmdnsDiscoverLogin.close();
 
-        } catch (UnknownHostException e4){
-            System.out.println(e4.getMessage());
         } catch (IOException e4){
             System.out.println(e4.getMessage());
         } catch (InterruptedException e4){
@@ -943,8 +876,6 @@ public class AirGUI implements ActionListener {
             //close
             jmdnsDiscoverMonit.close();
 
-        } catch (UnknownHostException e4){
-            System.out.println(e4.getMessage());
         } catch (IOException e4){
             System.out.println(e4.getMessage());
         } catch (InterruptedException e4){
@@ -978,8 +909,6 @@ public class AirGUI implements ActionListener {
             //close
             jmdnsDiscoverSystem.close();
 
-        } catch (UnknownHostException e4){
-            System.out.println(e4.getMessage());
         } catch (IOException e4){
             System.out.println(e4.getMessage());
         } catch (InterruptedException e4){

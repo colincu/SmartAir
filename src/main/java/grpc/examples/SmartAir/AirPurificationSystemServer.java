@@ -31,7 +31,7 @@ public class AirPurificationSystemServer extends AirPurificationSystemGrpc.AirPu
         systemServer.registerService(properties);
 
         // Local tcp port that the service will listen for connections on
-        int port = Integer.valueOf(properties.getProperty("service_port"));
+        int port = Integer.parseInt(properties.getProperty("service_port"));
 
         // Try/Except block for exception handling if service fails to start listening
         try {
@@ -93,7 +93,7 @@ public class AirPurificationSystemServer extends AirPurificationSystemGrpc.AirPu
             // these variables are defined in the *.properties file under resources
             String service_type = prop.getProperty("service_type") ;
             String service_name = prop.getProperty("service_name")  ;
-            int service_port = Integer.valueOf( prop.getProperty("service_port") );
+            int service_port = Integer.parseInt( prop.getProperty("service_port") );
             String service_description = prop.getProperty("service_description")  ;
 
             // Register the login service

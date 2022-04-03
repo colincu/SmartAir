@@ -29,7 +29,7 @@ public class AirPollutionMonitoringServer extends AirPollutionMonitoringGrpc.Air
         monitoringServer.registerService(prop);
 
         // Local tcp port that the service will listen for connections on
-        int port = Integer.valueOf(prop.getProperty("service_port"));
+        int port = Integer.parseInt(prop.getProperty("service_port"));
 
         // Try/Except block for exception handling if service fails to start listening
         try {
@@ -236,7 +236,7 @@ public class AirPollutionMonitoringServer extends AirPollutionMonitoringGrpc.Air
             // these variables are defined in the *.properties file under resources
             String service_type = prop.getProperty("service_type") ;
             String service_name = prop.getProperty("service_name")  ;
-            int service_port = Integer.valueOf( prop.getProperty("service_port") );
+            int service_port = Integer.parseInt( prop.getProperty("service_port") );
             String service_description = prop.getProperty("service_description")  ;
 
             // Register the login service
@@ -277,7 +277,7 @@ public class AirPollutionMonitoringServer extends AirPollutionMonitoringGrpc.Air
             prop.load(input);
 
             // get the property value and print it out
-            System.out.println("Login Service properies ...");
+            System.out.println("Login Service properties ...");
             System.out.println("\t service_type: " + prop.getProperty("service_type"));
             System.out.println("\t service_name: " +prop.getProperty("service_name"));
             System.out.println("\t service_description: " +prop.getProperty("service_description"));
