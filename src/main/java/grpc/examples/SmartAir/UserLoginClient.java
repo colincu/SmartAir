@@ -101,10 +101,10 @@ public class UserLoginClient {
     }
 
     //Logout
-    public static UserLogoutResponse userLogout() {
+    public static UserLogoutResponse userLogout(String user) {
         System.out.println("Inside Logout in Client: ");
 
-        UserLogoutRequest logoutRequest = UserLogoutRequest.newBuilder().setName("Colin").build();
+        UserLogoutRequest logoutRequest = UserLogoutRequest.newBuilder().setName(user).build();
 
         UserLogoutResponse response = blockingStub.userLogout(logoutRequest);
 

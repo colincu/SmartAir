@@ -32,7 +32,7 @@ public class AirGUI implements ActionListener {
             selectRoomsAirQualitySuccess3, selectRoomsAirQualitySuccess4, selectAveRoomAirQualitySuccess;
     private static JTextField userText;
     private static JPasswordField passText;
-    private static JButton loginButton, airPurificationSystemButton, airPollutionMonitoringButton,
+    private static JButton loginButton, logoutButton, airPurificationSystemButton, airPollutionMonitoringButton,
             purificationChangeSpeed, buttonSelectRoomAirQuality, buttonSelectAllRoomAirQuality,
             buttonSelectRoomsAirQuality, buttonSelectAveRoomAirQuality, purificationBackButton,
             monitoringRoomAirQuality, monitoringAllRoomAirQuality, monitoringRoomsAirQuality,
@@ -45,6 +45,7 @@ public class AirGUI implements ActionListener {
     private static JFrame frame;
     //service
     private static ServiceInfo loginServiceInfo, monitoringServiceInfo, systemServiceInfo;
+    private static String user;
 
     //start the application
     public static void main(String[] args) {
@@ -62,7 +63,407 @@ public class AirGUI implements ActionListener {
         LoginScreen();
     }
 
-    //after login page this page will offer a selection of the monitoring Ui actions
+    //logic performed when particular buttons clicked
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        //if login button pressed...
+        String user = null;
+        if (e.getSource() == loginButton) {
+            //login server vars
+            String host = loginServiceInfo.getHostAddresses()[0];
+            int port = loginServiceInfo.getPort();
+            // get username entered in textbox
+            user = userText.getText();
+            String pass = passText.getText();
+            System.out.println(user + " " + pass);
+
+            // Creating channel for connection
+            ManagedChannel loginChannel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
+            logger.info("Channel created with jmDNS discovered server details");
+            logger.info("Successfully set up the communication channel.");
+            UserLoginServiceGrpc.UserLoginServiceBlockingStub blockingStub;
+            blockingStub = UserLoginServiceGrpc.newBlockingStub(loginChannel);
+            //call user login client and pass in collected parameters
+            UserLoginResponse response = UserLoginClient.userLogin(user, pass, blockingStub);
+            int responseCode = response.getResponseCode();
+            //shut connection
+            try {
+                UserLoginClient.shut(loginChannel);
+                logger.info("Successfully shut down the communication channel");
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+
+            //response code 1 from login server is successful login, code 99 is unsuccessful login
+            if (responseCode == 1) {
+                logger.info("Successfully logged in..");
+                //remove old panel
+                frame.remove(panel);
+                //load new panel
+                SelectPage();
+                logger.info("Successfully loaded the select system UI page");
+            } else {
+                failure.setText("Login details incorrect, please try again...");
+            }
+        } else if (e.getSource() == logoutButton) {
+            //login server vars
+            String host = loginServiceInfo.getHostAddresses()[0];
+            int port = loginServiceInfo.getPort();
+
+            // Creating channel for connection
+            ManagedChannel logoutChannel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
+            logger.info("Channel created with jmDNS discovered server details");
+            logger.info("Successfully set up the communication channel.");
+            UserLoginServiceGrpc.UserLoginServiceBlockingStub blockingStub;
+            UserLoginServiceGrpc.newBlockingStub(logoutChannel);
+            //call user login client and pass in collected parameters
+            UserLogoutResponse response = UserLoginClient.userLogout(user);
+            int responseCode = response.getResponseCode();
+            //shut connection
+            try {
+                UserLoginClient.shut(logoutChannel);
+                logger.info("Successfully shut down the communication channel");
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+
+            //response code 1 from login server is successful logout, code 99 is unsuccessful loout
+            if (responseCode == 1) {
+                logger.info("Successfully logged out..");
+                //remove old panel
+                frame.remove(panel);
+                //load new panel
+                LoginScreen();
+                logger.info("Successfully loaded the login UI page");
+            } else {
+                failure.setText("Failed to logout...");
+            }
+        } else if (e.getSource() == airPollutionMonitoringButton) {
+            //remove old panel
+            frame.remove(panel);
+            SelectMonitoringOption();
+            logger.info("Successfully loaded the air pollution monitoring selection UI page");
+        } else if (e.getSource() == airPurificationSystemButton) {
+            //remove old panel
+            frame.remove(panel);
+            PurificationSystemPage();
+            logger.info("Successfully loaded the air purification system UI page");
+
+        } else if (e.getSource() == purificationChangeSpeed) {
+            String selectedSpeed = (String) changeSpeed.getSelectedItem();
+            //system server variables
+            String host = systemServiceInfo.getHostAddresses()[0];
+            int port = systemServiceInfo.getPort();
+            //Create a channel for the connection using variables discovered about the system server
+            ManagedChannel changeSpeedChannel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
+            logger.info("Successfully set up the communication channel.");
+            AirPurificationSystemGrpc.AirPurificationSystemBlockingStub blockingStub;
+            blockingStub = AirPurificationSystemGrpc.newBlockingStub(changeSpeedChannel);
+            //set request
+            ChangeSpeedRequest request = ChangeSpeedRequest.newBuilder().setSpeed(selectedSpeed).build();
+            // set reply
+            ChangeSpeedReply reply;
+            //error handling
+            try {
+                reply = blockingStub
+                        // setting a deadline 3 seconds from now for this to complete
+                        .withDeadlineAfter(3, TimeUnit.SECONDS)
+                        .changeSpeed(request);
+                logger.info("The air purification system has been set to : " + reply.getSpeed());
+            } catch (StatusRuntimeException err) {
+                logger.log(Level.WARNING, "Call to change speed failed: {0}", err.getStatus());
+                return;
+            }
+            logger.info("Air purification system changed to: " + reply.getSpeed());
+            speedChangeSuccess.setText("Speed successfully changed to: " + selectedSpeed);
+            //rpc termination
+            // no new tasks will be accepted, starts orderly shutdown
+            changeSpeedChannel.shutdown();
+            // waits for all shutdown tasks to complete or the timeout, whichever is first
+            try {
+                changeSpeedChannel.awaitTermination(2, TimeUnit.SECONDS);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+            logger.info("Change speed communication channel successfully shutdown");
+
+        } else if ((e.getSource() == purificationBackButton) ||
+                (e.getSource() == monitoringBackButton) ||
+                (e.getSource() == roomAirQualityBackButton) ||
+                (e.getSource() == allRoomAirQualityBackButton) ||
+                (e.getSource() == roomsAirQualityBackButton) ||
+                (e.getSource() == aveRoomAirQualityBackButton)) {
+            //remove old panel
+            frame.remove(panel);
+            //load new panel
+            SelectPage();
+            logger.info("Successfully loaded the select system UI page");
+        } else if ((e.getSource() == monitoringRoomAirQuality)) {
+            //remove old panel
+            frame.remove(panel);
+            //load new panel
+            RoomAirQualityPage();
+            logger.info("Successfully loaded the Room Air Quality page");
+        } else if ((e.getSource() == monitoringAllRoomAirQuality)) {
+            //remove old panel
+            frame.remove(panel);
+            //load new panel
+            AllRoomAirQualityPage();
+            logger.info("Successfully loaded the All Room Air Quality page");
+        } else if ((e.getSource() == monitoringRoomsAirQuality)) {
+            //remove old panel
+            frame.remove(panel);
+            //load new panel
+            RoomsAirQualityPage();
+            logger.info("Successfully loaded the Rooms Air Quality page");
+        } else if ((e.getSource() == monitoringAveRoomAirQuality)) {
+            //remove old panel
+            frame.remove(panel);
+            //load new panel
+            AveRoomAirQualityPage();
+            logger.info("Successfully loaded the Average Rooms Air Quality page");
+        } else if (e.getSource() == buttonSelectRoomAirQuality) {
+            //get the selected room from the combo box in the UI
+            String selectedRoom = (String) selectRoomAirQualityRoom.getSelectedItem();
+            //Create a channel for the connection
+            ManagedChannel selectedRoomChannel = ManagedChannelBuilder.forAddress("localhost", 50556).usePlaintext().build();
+            logger.info("Successfully set up the communication channel.");
+            AirPollutionMonitoringGrpc.AirPollutionMonitoringBlockingStub blockingStub;
+            blockingStub = AirPollutionMonitoringGrpc.newBlockingStub(selectedRoomChannel);
+            //set request
+            AirQualityRequest request = AirQualityRequest.newBuilder().setRoom(selectedRoom).build();
+            // set reply
+            AirQualityReply reply;
+            //error handling
+            try {
+                reply = blockingStub
+                        // setting a deadline 3 seconds from now for this to complete
+                        .withDeadlineAfter(3, TimeUnit.SECONDS)
+                        .roomAirQuality(request);
+                logger.info("The air quality of the selected room is: " + reply.getQuality());
+            } catch (StatusRuntimeException err) {
+                logger.log(Level.WARNING, "Call to change speed failed: {0}", err.getStatus());
+                return;
+            }
+            logger.info("The air quality of the selected room is: " + reply.getQuality());
+            selectRoomAirQualitySuccess.setText("The air quality of the selected room is: " + reply.getQuality());
+            //rpc termination
+            // no new tasks will be accepted, starts orderly shutdown
+            selectedRoomChannel.shutdown();
+            // waits for all shutdown tasks to complete or the timeout, whichever is first
+            try {
+                selectedRoomChannel.awaitTermination(2, TimeUnit.SECONDS);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+            logger.info("Select room air quality communication channel successfully shutdown");
+
+        } else if (e.getSource() == buttonSelectAllRoomAirQuality) {
+            //get the selected room from the combo box in the UI
+            String selectedAllRoom = (String) selectAllRoomAirQualityRoom.getSelectedItem();
+            //Create a channel for the connection
+            ManagedChannel selectedAllRoomChannel = ManagedChannelBuilder.forAddress("localhost", 50556).usePlaintext().build();
+            logger.info("Successfully set up the communication channel.");
+            AirPollutionMonitoringGrpc.AirPollutionMonitoringBlockingStub blockingStub;
+            blockingStub = AirPollutionMonitoringGrpc.newBlockingStub(selectedAllRoomChannel);
+            //set request
+            AllAirQualityRequest request = AllAirQualityRequest.newBuilder().setAllRoom(selectedAllRoom).build();
+            // set reply
+            Iterator<AirQualityReply> replies;
+            //error handling
+            try {
+                replies = blockingStub
+                        // setting a deadline 3 seconds from now for this to complete
+                        .withDeadlineAfter(3, TimeUnit.SECONDS)
+                        .allRoomAirQuality(request);
+                int counter = 0;
+                while (replies.hasNext()) {
+                    AirQualityReply reply = replies.next();
+                    logger.info("The air quality of the selected room is: " + reply.getQuality());
+                    if (counter == 0) {
+                        selectAllRoomAirQualitySuccess1.setText("The air quality of the room 1 is: " + reply.getQuality());
+                    } else if (counter == 1) {
+                        selectAllRoomAirQualitySuccess2.setText("The air quality of the room 2 is: " + reply.getQuality());
+                    } else if (counter == 2) {
+                        selectAllRoomAirQualitySuccess3.setText("The air quality of the room 3 is: " + reply.getQuality());
+                    } else {
+                        selectAllRoomAirQualitySuccess4.setText("The air quality of the room 4 is: " + reply.getQuality());
+                    }
+                    counter = counter + 1;
+                }
+            } catch (StatusRuntimeException err) {
+                logger.log(Level.WARNING, "Call to change speed failed: {0}", err.getStatus());
+                return;
+            }
+            //logger.info("The air quality of the selected room is: " + reply.getQuality());
+            //selectAllRoomAirQualitySuccess.setText("The air quality of the selected room is: " + reply.getQuality());
+            //rpc termination
+            // no new tasks will be accepted, starts orderly shutdown
+            selectedAllRoomChannel.shutdown();
+            // waits for all shutdown tasks to complete or the timeout, whichever is first
+            try {
+                selectedAllRoomChannel.awaitTermination(2, TimeUnit.SECONDS);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+            logger.info("Select room air quality communication channel successfully shutdown");
+
+        }
+        //show selected rooms air quality
+        else if (e.getSource() == buttonSelectRoomsAirQuality) {
+            //Create a channel for the connection
+            ManagedChannel selectedRoomsChannel = ManagedChannelBuilder.forAddress("localhost", 50556).usePlaintext().build();
+            logger.info("Successfully set up the communication channel.");
+            AirPollutionMonitoringGrpc.AirPollutionMonitoringStub nonBlockingStub;
+            nonBlockingStub = AirPollutionMonitoringGrpc.newStub(selectedRoomsChannel);
+            //reply stream observer
+            StreamObserver<AirQualityReply> responseObserver = new StreamObserver<AirQualityReply>() {
+                @Override
+                public void onNext(AirQualityReply value) {
+                    //System.out.println("Air quality for selected room is " + value.getQuality());
+                    if (room1.isSelected()) {
+                        selectRoomsAirQualitySuccess1.setText("The air quality of the room 1 is: " + value.getQuality());
+                    }
+                    if (room2.isSelected()) {
+                        selectRoomsAirQualitySuccess2.setText("The air quality of the room 2 is: " + value.getQuality());
+                    }
+                    if (room3.isSelected()) {
+                        selectRoomsAirQualitySuccess3.setText("The air quality of the room 3 is: " + value.getQuality());
+                    }
+                    if (room4.isSelected()) {
+                        selectRoomsAirQualitySuccess4.setText("The air quality of the room 4 is: " + value.getQuality());
+                    }
+                }
+
+                @Override
+                public void onError(Throwable t) {
+                    //
+                }
+
+                @Override
+                public void onCompleted() {
+                    logger.info("Server has finished processing streams.");
+                }
+            };
+            //set request
+            StreamObserver<AirQualityRequest> requestObserver =
+                    nonBlockingStub.roomsAirQuality(responseObserver);
+            try {
+                // Sleep for some time before sending the next one.
+                Thread.sleep(new Random().nextInt(900) + 400);
+                if (room1.isSelected()) {
+                    requestObserver.onNext(AirQualityRequest.newBuilder().setRoom("1").build());
+                }
+                // Sleep for some time before sending the next one.
+                Thread.sleep(new Random().nextInt(900) + 400);
+                if (room2.isSelected()) {
+                    requestObserver.onNext(AirQualityRequest.newBuilder().setRoom("2").build());
+                }
+                // Sleep for a bit before sending the next one.
+                Thread.sleep(new Random().nextInt(900) + 400);
+                if (room3.isSelected()) {
+                    requestObserver.onNext(AirQualityRequest.newBuilder().setRoom("3").build());
+                }
+                // Sleep for a bit before sending the next one.
+                Thread.sleep(new Random().nextInt(900) + 400);
+                if (room4.isSelected()) {
+                    requestObserver.onNext(AirQualityRequest.newBuilder().setRoom("4").build());
+                }
+
+                logger.info("Sending messages...");
+
+                // end of requests
+                requestObserver.onCompleted();
+
+            } catch (RuntimeException | InterruptedException e3) {
+                e3.printStackTrace();
+            }
+            //rpc termination
+            // no new tasks will be accepted, starts orderly shutdown
+            selectedRoomsChannel.shutdown();
+            // waits for all shutdown tasks to complete or the timeout, whichever is first
+            try {
+                selectedRoomsChannel.awaitTermination(2, TimeUnit.SECONDS);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+            logger.info("Select room air quality communication channel successfully shutdown");
+
+        }
+        //show selected rooms average air quality
+        else if (e.getSource() == buttonSelectAveRoomAirQuality) {
+            //Create a channel for the connection
+            ManagedChannel selectedAveRoomChannel = ManagedChannelBuilder.forAddress("localhost", 50556).usePlaintext().build();
+            logger.info("Successfully set up the communication channel.");
+            AirPollutionMonitoringGrpc.AirPollutionMonitoringStub nonBlockingStub;
+            nonBlockingStub = AirPollutionMonitoringGrpc.newStub(selectedAveRoomChannel);
+            //reply stream observer
+            StreamObserver<AveAirQualityReply> responseObserver = new StreamObserver<AveAirQualityReply>() {
+                @Override
+                public void onNext(AveAirQualityReply value) {
+                    //System.out.println("Air quality for selected room is " + value.getQuality());
+                    selectAveRoomAirQualitySuccess.setText("The average air quality is: " + value.getQuality());
+
+                }
+
+                @Override
+                public void onError(Throwable t) {
+                    //
+                }
+
+                @Override
+                public void onCompleted() {
+                    logger.info("Server has finished processing streams.");
+                }
+            };
+            //set request
+            StreamObserver<AirQualityRequest> requestObserver =
+                    nonBlockingStub.aveRoomAirQuality(responseObserver);
+            try {
+                // Sleep for some time before sending the next one.
+                Thread.sleep(new Random().nextInt(900) + 400);
+                if (room1.isSelected()) {
+                    requestObserver.onNext(AirQualityRequest.newBuilder().setRoom("1").build());
+                }
+                // Sleep for some time before sending the next one.
+                Thread.sleep(new Random().nextInt(900) + 400);
+                if (room2.isSelected()) {
+                    requestObserver.onNext(AirQualityRequest.newBuilder().setRoom("2").build());
+                }
+                // Sleep for a bit before sending the next one.
+                Thread.sleep(new Random().nextInt(900) + 400);
+                if (room3.isSelected()) {
+                    requestObserver.onNext(AirQualityRequest.newBuilder().setRoom("3").build());
+                }
+                // Sleep for a bit before sending the next one.
+                Thread.sleep(new Random().nextInt(900) + 400);
+                if (room4.isSelected()) {
+                    requestObserver.onNext(AirQualityRequest.newBuilder().setRoom("4").build());
+                }
+
+                logger.info("Sending messages...");
+
+                // end of requests
+                requestObserver.onCompleted();
+
+            } catch (RuntimeException | InterruptedException e3) {
+                e3.printStackTrace();
+            }
+            //rpc termination
+            // no new tasks will be accepted, starts orderly shutdown
+            selectedAveRoomChannel.shutdown();
+            // waits for all shutdown tasks to complete or the timeout, whichever is first
+            try {
+                selectedAveRoomChannel.awaitTermination(2, TimeUnit.SECONDS);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+            logger.info("Select room air quality communication channel successfully shutdown");
+
+        }
+    }
+
+    //this page is displayed after selecting the "Air Pollution Monitoring" button
     public static void SelectMonitoringOption() {
         // configure panel for GUI
         panel = new JPanel();
@@ -101,381 +502,6 @@ public class AirGUI implements ActionListener {
         monitoringBackButton.setBounds(40, 160, 140, 25);
         monitoringBackButton.addActionListener(new AirGUI());
         panel.add(monitoringBackButton);
-    }
-
-    //logic performed when particular buttons clicked
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        //if login button pressed...
-        if (e.getSource() == loginButton) {
-            //login server vars
-            String host = loginServiceInfo.getHostAddresses()[0];
-            int port = loginServiceInfo.getPort();
-            // get username entered in textbox
-            String user = userText.getText();
-            String pass = passText.getText();
-            System.out.println(user + " " + pass);
-
-            // Creating channel for connection
-            ManagedChannel loginChannel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
-            logger.info("Channel created with jmDNS discovered server details");
-            logger.info("Successfully set up the communication channel.");
-            UserLoginServiceGrpc.UserLoginServiceBlockingStub blockingStub;
-            blockingStub = UserLoginServiceGrpc.newBlockingStub(loginChannel);
-            //call user login client and pass in collected parameters
-            UserLoginResponse response = UserLoginClient.userLogin(user, pass, blockingStub);
-            int responseCode = response.getResponseCode();
-            //shut connection
-            try {
-                UserLoginClient.shut(loginChannel);
-                logger.info("Successfully shut down the communication channel");
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-            }
-
-            //response code 1 from login server is successful login, code 99 is unsuccessful login
-            if (responseCode == 1) {
-                logger.info("Successfully logged in..");
-                //remove old panel
-                frame.remove(panel);
-                //load new panel
-                SelectPage();
-                logger.info("Successfully loaded the select system UI page");
-            } else {
-                failure.setText("Login details incorrect, please try again...");
-            }
-        }
-        else if (e.getSource() == airPollutionMonitoringButton){
-            //remove old panel
-            frame.remove(panel);
-            SelectMonitoringOption();
-            logger.info("Successfully loaded the air pollution monitoring selection UI page");
-        }
-        else if (e.getSource() == airPurificationSystemButton){
-            //remove old panel
-            frame.remove(panel);
-            PurificationSystemPage();
-            logger.info("Successfully loaded the air purification system UI page");
-
-        }
-        else if (e.getSource() == purificationChangeSpeed){
-            String selectedSpeed = (String) changeSpeed.getSelectedItem();
-            //system server variables
-            String host = systemServiceInfo.getHostAddresses()[0];
-            int port = systemServiceInfo.getPort();
-            //Create a channel for the connection using variables discovered about the system server
-            ManagedChannel changeSpeedChannel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
-            logger.info("Successfully set up the communication channel.");
-            AirPurificationSystemGrpc.AirPurificationSystemBlockingStub blockingStub;
-            blockingStub = AirPurificationSystemGrpc.newBlockingStub(changeSpeedChannel);
-            //set request
-            ChangeSpeedRequest request = ChangeSpeedRequest.newBuilder().setSpeed(selectedSpeed).build();
-            // set reply
-            ChangeSpeedReply reply;
-            //error handling
-            try {
-                reply = blockingStub
-                        // setting a deadline 3 seconds from now for this to complete
-                        .withDeadlineAfter(3, TimeUnit.SECONDS)
-                        .changeSpeed(request);
-                logger.info("The air purification system has been set to : " + reply.getSpeed());
-            } catch (StatusRuntimeException err) {
-                logger.log(Level.WARNING, "Call to change speed failed: {0}", err.getStatus());
-                return;
-            }
-            logger.info("Air purification system changed to: " + reply.getSpeed());
-            speedChangeSuccess.setText("Speed successfully changed to: " + selectedSpeed);
-            //rpc termination
-            // no new tasks will be accepted, starts orderly shutdown
-            changeSpeedChannel.shutdown();
-            // waits for all shutdown tasks to complete or the timeout, whichever is first
-            try {
-                changeSpeedChannel.awaitTermination(2, TimeUnit.SECONDS);
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-            }
-            logger.info("Change speed communication channel successfully shutdown");
-
-        }
-        else if ((e.getSource() == purificationBackButton ) ||
-                (e.getSource() == monitoringBackButton) ||
-                (e.getSource() == roomAirQualityBackButton) ||
-                (e.getSource() == allRoomAirQualityBackButton) ||
-                (e.getSource() == roomsAirQualityBackButton) ||
-                (e.getSource() == aveRoomAirQualityBackButton)){
-            //remove old panel
-            frame.remove(panel);
-            //load new panel
-            SelectPage();
-            logger.info("Successfully loaded the select system UI page");
-        }
-        else if ((e.getSource() == monitoringRoomAirQuality )){
-            //remove old panel
-            frame.remove(panel);
-            //load new panel
-            RoomAirQualityPage();
-            logger.info("Successfully loaded the Room Air Quality page");
-        }
-        else if ((e.getSource() == monitoringAllRoomAirQuality )){
-            //remove old panel
-            frame.remove(panel);
-            //load new panel
-            AllRoomAirQualityPage();
-            logger.info("Successfully loaded the All Room Air Quality page");
-        }
-        else if ((e.getSource() == monitoringRoomsAirQuality )){
-            //remove old panel
-            frame.remove(panel);
-            //load new panel
-            RoomsAirQualityPage();
-            logger.info("Successfully loaded the Rooms Air Quality page");
-        }
-        else if ((e.getSource() == monitoringAveRoomAirQuality )){
-            //remove old panel
-            frame.remove(panel);
-            //load new panel
-            AveRoomAirQualityPage();
-            logger.info("Successfully loaded the Average Rooms Air Quality page");
-        }
-        else if (e.getSource() == buttonSelectRoomAirQuality){
-            //get the selected room from the combo box in the UI
-            String selectedRoom = (String) selectRoomAirQualityRoom.getSelectedItem();
-            //Create a channel for the connection
-            ManagedChannel selectedRoomChannel = ManagedChannelBuilder.forAddress("localhost", 50556).usePlaintext().build();
-            logger.info("Successfully set up the communication channel.");
-            AirPollutionMonitoringGrpc.AirPollutionMonitoringBlockingStub blockingStub;
-            blockingStub = AirPollutionMonitoringGrpc.newBlockingStub(selectedRoomChannel);
-            //set request
-            AirQualityRequest request = AirQualityRequest.newBuilder().setRoom(selectedRoom).build();
-            // set reply
-            AirQualityReply reply;
-            //error handling
-            try {
-                reply = blockingStub
-                        // setting a deadline 3 seconds from now for this to complete
-                        .withDeadlineAfter(3, TimeUnit.SECONDS)
-                        .roomAirQuality(request);
-                logger.info("The air quality of the selected room is: " + reply.getQuality());
-            } catch (StatusRuntimeException err) {
-                logger.log(Level.WARNING, "Call to change speed failed: {0}", err.getStatus());
-                return;
-            }
-            logger.info("The air quality of the selected room is: " + reply.getQuality());
-            selectRoomAirQualitySuccess.setText("The air quality of the selected room is: " + reply.getQuality());
-            //rpc termination
-            // no new tasks will be accepted, starts orderly shutdown
-            selectedRoomChannel.shutdown();
-            // waits for all shutdown tasks to complete or the timeout, whichever is first
-            try {
-                selectedRoomChannel.awaitTermination(2, TimeUnit.SECONDS);
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-            }
-            logger.info("Select room air quality communication channel successfully shutdown");
-
-        }
-        else if (e.getSource() == buttonSelectAllRoomAirQuality){
-            //get the selected room from the combo box in the UI
-            String selectedAllRoom = (String) selectAllRoomAirQualityRoom.getSelectedItem();
-            //Create a channel for the connection
-            ManagedChannel selectedAllRoomChannel = ManagedChannelBuilder.forAddress("localhost", 50556).usePlaintext().build();
-            logger.info("Successfully set up the communication channel.");
-            AirPollutionMonitoringGrpc.AirPollutionMonitoringBlockingStub blockingStub;
-            blockingStub = AirPollutionMonitoringGrpc.newBlockingStub(selectedAllRoomChannel);
-            //set request
-            AllAirQualityRequest request = AllAirQualityRequest.newBuilder().setAllRoom(selectedAllRoom).build();
-            // set reply
-            Iterator<AirQualityReply> replies;
-            //error handling
-            try {
-                replies = blockingStub
-                        // setting a deadline 3 seconds from now for this to complete
-                        .withDeadlineAfter(3, TimeUnit.SECONDS)
-                        .allRoomAirQuality(request);
-                int counter = 0;
-                while (replies.hasNext()){
-                    AirQualityReply reply = replies.next();
-                    logger.info("The air quality of the selected room is: " + reply.getQuality());
-                    if (counter == 0) {
-                        selectAllRoomAirQualitySuccess1.setText("The air quality of the room 1 is: " + reply.getQuality());
-                    }
-                    else if (counter ==1){
-                        selectAllRoomAirQualitySuccess2.setText("The air quality of the room 2 is: " + reply.getQuality());
-                    }
-                    else if (counter ==2){
-                        selectAllRoomAirQualitySuccess3.setText("The air quality of the room 3 is: " + reply.getQuality());
-                    }
-                    else {
-                        selectAllRoomAirQualitySuccess4.setText("The air quality of the room 4 is: " + reply.getQuality());
-                    }
-                    counter = counter +1;
-                }
-            } catch (StatusRuntimeException err) {
-                logger.log(Level.WARNING, "Call to change speed failed: {0}", err.getStatus());
-                return;
-            }
-            //logger.info("The air quality of the selected room is: " + reply.getQuality());
-            //selectAllRoomAirQualitySuccess.setText("The air quality of the selected room is: " + reply.getQuality());
-            //rpc termination
-            // no new tasks will be accepted, starts orderly shutdown
-            selectedAllRoomChannel.shutdown();
-            // waits for all shutdown tasks to complete or the timeout, whichever is first
-            try {
-                selectedAllRoomChannel.awaitTermination(2, TimeUnit.SECONDS);
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-            }
-            logger.info("Select room air quality communication channel successfully shutdown");
-
-        }
-        //show selected rooms air quality
-        else if (e.getSource() == buttonSelectRoomsAirQuality){
-            //Create a channel for the connection
-            ManagedChannel selectedRoomsChannel = ManagedChannelBuilder.forAddress("localhost", 50556).usePlaintext().build();
-            logger.info("Successfully set up the communication channel.");
-            AirPollutionMonitoringGrpc.AirPollutionMonitoringStub nonBlockingStub;
-            nonBlockingStub = AirPollutionMonitoringGrpc.newStub(selectedRoomsChannel);
-            //reply stream observer
-            StreamObserver<AirQualityReply> responseObserver = new StreamObserver<AirQualityReply>() {
-                @Override
-                public void onNext(AirQualityReply value) {
-                    //System.out.println("Air quality for selected room is " + value.getQuality());
-                    if (room1.isSelected()) {
-                        selectRoomsAirQualitySuccess1.setText("The air quality of the room 1 is: " + value.getQuality());
-                    }
-                    if (room2.isSelected()){
-                        selectRoomsAirQualitySuccess2.setText("The air quality of the room 2 is: " + value.getQuality());
-                    }
-                    if (room3.isSelected()){
-                        selectRoomsAirQualitySuccess3.setText("The air quality of the room 3 is: " + value.getQuality());
-                    }
-                    if (room4.isSelected()) {
-                        selectRoomsAirQualitySuccess4.setText("The air quality of the room 4 is: " + value.getQuality());
-                    }
-                }
-                @Override
-                public void onError(Throwable t) {
-                    //
-                }
-                @Override
-                public void onCompleted() {
-                    logger.info("Server has finished processing streams.");
-                }
-            };
-            //set request
-            StreamObserver<AirQualityRequest> requestObserver =
-                    nonBlockingStub.roomsAirQuality(responseObserver);
-            try {
-                // Sleep for some time before sending the next one.
-                Thread.sleep(new Random().nextInt(900) + 400);
-                if(room1.isSelected()) {
-                    requestObserver.onNext(AirQualityRequest.newBuilder().setRoom("1").build());
-                }
-                // Sleep for some time before sending the next one.
-                Thread.sleep(new Random().nextInt(900) + 400);
-                if(room2.isSelected()) {
-                    requestObserver.onNext(AirQualityRequest.newBuilder().setRoom("2").build());
-                }
-                // Sleep for a bit before sending the next one.
-                Thread.sleep(new Random().nextInt(900) + 400);
-                if(room3.isSelected()) {
-                    requestObserver.onNext(AirQualityRequest.newBuilder().setRoom("3").build());
-                }
-                // Sleep for a bit before sending the next one.
-                Thread.sleep(new Random().nextInt(900) + 400);
-                if(room4.isSelected()) {
-                    requestObserver.onNext(AirQualityRequest.newBuilder().setRoom("4").build());
-                }
-
-                logger.info("Sending messages...");
-
-                // end of requests
-                requestObserver.onCompleted();
-
-            } catch (RuntimeException | InterruptedException e3) {
-                e3.printStackTrace();
-            }
-            //rpc termination
-            // no new tasks will be accepted, starts orderly shutdown
-            selectedRoomsChannel.shutdown();
-            // waits for all shutdown tasks to complete or the timeout, whichever is first
-            try {
-                selectedRoomsChannel.awaitTermination(2, TimeUnit.SECONDS);
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-            }
-            logger.info("Select room air quality communication channel successfully shutdown");
-
-        }
-        //show selected rooms average air quality
-        else if (e.getSource() == buttonSelectAveRoomAirQuality){
-            //Create a channel for the connection
-            ManagedChannel selectedAveRoomChannel = ManagedChannelBuilder.forAddress("localhost", 50556).usePlaintext().build();
-            logger.info("Successfully set up the communication channel.");
-            AirPollutionMonitoringGrpc.AirPollutionMonitoringStub nonBlockingStub;
-            nonBlockingStub = AirPollutionMonitoringGrpc.newStub(selectedAveRoomChannel);
-            //reply stream observer
-            StreamObserver<AveAirQualityReply> responseObserver = new StreamObserver<AveAirQualityReply>() {
-                @Override
-                public void onNext(AveAirQualityReply value) {
-                    //System.out.println("Air quality for selected room is " + value.getQuality());
-                    selectAveRoomAirQualitySuccess.setText("The average air quality is: " + value.getQuality());
-
-                }
-                @Override
-                public void onError(Throwable t) {
-                    //
-                }
-                @Override
-                public void onCompleted() {
-                    logger.info("Server has finished processing streams.");
-                }
-            };
-            //set request
-            StreamObserver<AirQualityRequest> requestObserver =
-                    nonBlockingStub.aveRoomAirQuality(responseObserver);
-            try {
-                // Sleep for some time before sending the next one.
-                Thread.sleep(new Random().nextInt(900) + 400);
-                if(room1.isSelected()) {
-                    requestObserver.onNext(AirQualityRequest.newBuilder().setRoom("1").build());
-                }
-                // Sleep for some time before sending the next one.
-                Thread.sleep(new Random().nextInt(900) + 400);
-                if(room2.isSelected()) {
-                    requestObserver.onNext(AirQualityRequest.newBuilder().setRoom("2").build());
-                }
-                // Sleep for a bit before sending the next one.
-                Thread.sleep(new Random().nextInt(900) + 400);
-                if(room3.isSelected()) {
-                    requestObserver.onNext(AirQualityRequest.newBuilder().setRoom("3").build());
-                }
-                // Sleep for a bit before sending the next one.
-                Thread.sleep(new Random().nextInt(900) + 400);
-                if(room4.isSelected()) {
-                    requestObserver.onNext(AirQualityRequest.newBuilder().setRoom("4").build());
-                }
-
-                logger.info("Sending messages...");
-
-                // end of requests
-                requestObserver.onCompleted();
-
-            } catch (RuntimeException | InterruptedException e3) {
-                e3.printStackTrace();
-            }
-            //rpc termination
-            // no new tasks will be accepted, starts orderly shutdown
-            selectedAveRoomChannel.shutdown();
-            // waits for all shutdown tasks to complete or the timeout, whichever is first
-            try {
-                selectedAveRoomChannel.awaitTermination(2, TimeUnit.SECONDS);
-            } catch (InterruptedException ex) {
-                ex.printStackTrace();
-            }
-            logger.info("Select room air quality communication channel successfully shutdown");
-
-        }
     }
 
     //UI page to display the options to change the air purification system speed
@@ -546,6 +572,11 @@ public class AirGUI implements ActionListener {
         airPollutionMonitoringButton.setBounds(240, 80, 180, 25);
         airPollutionMonitoringButton.addActionListener(new AirGUI());
         panel.add(airPollutionMonitoringButton);
+
+        logoutButton = new JButton("Logout");
+        logoutButton.setBounds(180, 120, 180, 25);
+        logoutButton.addActionListener(new AirGUI());
+        panel.add(logoutButton);
     }
 
     //Initial login screen
