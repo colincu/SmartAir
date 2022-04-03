@@ -587,7 +587,7 @@ public class AirGUI implements ActionListener {
 
         // configure frame for GUI - outer window
         frame = new JFrame();
-        frame.setSize(400, 400);
+        frame.setSize(600, 600);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         // add panel to frame
