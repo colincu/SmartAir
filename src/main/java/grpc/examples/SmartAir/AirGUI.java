@@ -67,7 +67,6 @@ public class AirGUI implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         //if login button pressed...
-        String user = null;
         if (e.getSource() == loginButton) {
             //login server vars
             String host = loginServiceInfo.getHostAddresses()[0];
