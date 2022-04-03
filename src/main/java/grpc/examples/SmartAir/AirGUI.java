@@ -114,9 +114,10 @@ public class AirGUI implements ActionListener {
             logger.info("Channel created with jmDNS discovered server details");
             logger.info("Successfully set up the communication channel.");
             UserLoginServiceGrpc.UserLoginServiceBlockingStub blockingStub;
-            UserLoginServiceGrpc.newBlockingStub(logoutChannel);
+            blockingStub = UserLoginServiceGrpc.newBlockingStub(logoutChannel);
             //call user login client and pass in collected parameters
-            UserLogoutResponse response = UserLoginClient.userLogout(user);
+            UserLogoutRequest logoutRequest = UserLogoutRequest.newBuilder().setName(user).build();
+            UserLogoutResponse response = blockingStub.userLogout(logoutRequest);
             int responseCode = response.getResponseCode();
             //shut connection
             try {
