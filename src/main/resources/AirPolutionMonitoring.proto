@@ -6,9 +6,9 @@ option java_outer_classname = "SmartAirServiceImpl";
 
 package SmartAir;
 
-// Service provided by server.
+// Service provided by the monitoring server.
 service AirPollutionMonitoring {
-
+  // unary
   rpc  RoomAirQuality (AirQualityRequest) returns (AirQualityReply) {}
 
   // Sends a request for air quality levels for all rooms, reply is a stream of air quality levels for all rooms
@@ -25,17 +25,14 @@ service AirPollutionMonitoring {
 message AirQualityRequest {
   string room = 1;
 }
-
 // The request message for all rooms air quality.
 message AllAirQualityRequest {
   string allRoom = 1;
 }
-
 // The response message containing the air quality level of the room
 message AirQualityReply {
   int32 quality = 1;
 }
-
 // The response message containing the average air quality level of the rooms provided in request stream
 message AveAirQualityReply {
   int32 quality = 1;

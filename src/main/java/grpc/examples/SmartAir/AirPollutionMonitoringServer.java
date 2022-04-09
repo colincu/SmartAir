@@ -11,14 +11,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.util.Properties;
+import java.util.Random;
 import java.util.logging.Logger;
 
 public class AirPollutionMonitoringServer extends AirPollutionMonitoringGrpc.AirPollutionMonitoringImplBase {
 
     private static final Logger logger = Logger.getLogger(AirPollutionMonitoringServer.class.getName());
 
+    //generate Random values between 70 and 80 for room air quality measures
+    Random random = new Random();
+    int room1 = random.nextInt((80 - 70) + 1) + 70;
+    int room2 = random.nextInt((80 - 70) + 1) + 70;
+    int room3 = random.nextInt((80 - 70) + 1) + 70;
+    int room4 = random.nextInt((80 - 70) + 1) + 70;
     // set array of room air quality measures
-    int[] arr = {74, 70, 68, 72};
+    int[] arr = {room1, room2, room3, room4};
 
     public static void main(String[] args) throws IOException {
         // Print to screen to see the server has started

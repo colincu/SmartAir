@@ -6,11 +6,10 @@ option java_outer_classname = "SmartAirSystemImpl";
 
 package SmartAir;
 
-// Login service provided by server.
+// Air purification system service provided by server.
 service AirPurificationSystem{
   // Sends a request to increase/decrease speed of the system
   rpc  ChangeSpeed (ChangeSpeedRequest) returns (ChangeSpeedReply) {}
-
 }
 
 // The request message containing the requested speed off/low/med/high

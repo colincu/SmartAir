@@ -17,7 +17,7 @@ import static io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall;
 
 /**
  * <pre>
- * Login service provided by server.
+ * Air purification system service provided by server.
  * </pre>
  */
 @javax.annotation.Generated(
@@ -87,7 +87,7 @@ public final class AirPurificationSystemGrpc {
 
   /**
    * <pre>
-   * Login service provided by server.
+   * Air purification system service provided by server.
    * </pre>
    */
   public static abstract class AirPurificationSystemImplBase implements io.grpc.BindableService {
@@ -117,7 +117,7 @@ public final class AirPurificationSystemGrpc {
 
   /**
    * <pre>
-   * Login service provided by server.
+   * Air purification system service provided by server.
    * </pre>
    */
   public static final class AirPurificationSystemStub extends io.grpc.stub.AbstractStub<AirPurificationSystemStub> {
@@ -150,7 +150,7 @@ public final class AirPurificationSystemGrpc {
 
   /**
    * <pre>
-   * Login service provided by server.
+   * Air purification system service provided by server.
    * </pre>
    */
   public static final class AirPurificationSystemBlockingStub extends io.grpc.stub.AbstractStub<AirPurificationSystemBlockingStub> {
@@ -182,7 +182,7 @@ public final class AirPurificationSystemGrpc {
 
   /**
    * <pre>
-   * Login service provided by server.
+   * Air purification system service provided by server.
    * </pre>
    */
   public static final class AirPurificationSystemFutureStub extends io.grpc.stub.AbstractStub<AirPurificationSystemFutureStub> {
