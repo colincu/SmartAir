@@ -116,13 +116,8 @@ public class UserLoginServer extends UserLoginServiceGrpc.UserLoginServiceImplBa
             ServiceInfo info = jmdnsLoginServer.getServiceInfo(service_type, service_name, 5000);
             System.out.println("Details of the service that was registered " + info);
 
-
-
             // Wait a bit
             Thread.sleep(1000);
-
-            // Unregister all services
-            //jmdns.unregisterAllServices();
 
         } catch (IOException e) {
             System.out.println(e.getMessage());

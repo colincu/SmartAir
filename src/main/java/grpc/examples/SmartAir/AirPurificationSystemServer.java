@@ -66,7 +66,7 @@ public class AirPurificationSystemServer extends AirPurificationSystemGrpc.AirPu
             case "high":
                 // user request to update speed of the air purification system
                 // set initial state of purification system to off
-                // real world would see this state pulled from the actual hardware
+                // real world would see this state pulled from the actual hardware and updates sent to hardware
                 reply.setResponseCode(1).setSpeed(speed);
                 logger.info("The air purification system has been set to: " + speed);
                 break;

@@ -91,7 +91,6 @@ public class AirPollutionMonitoringServer extends AirPollutionMonitoringGrpc.Air
                 System.out.println("Please select a valid room");
                 break;
         }
-
         responseObserver.onNext(response.build());
         // finished writing responses
         responseObserver.onCompleted();
@@ -255,8 +254,6 @@ public class AirPollutionMonitoringServer extends AirPollutionMonitoringGrpc.Air
             ServiceInfo info = jmdnsMonitServer.getServiceInfo(service_type, service_name, 5000);
             System.out.println("Details of the service that was registered " + info);
 
-
-
             // Wait a bit
             Thread.sleep(1000);
 
@@ -272,6 +269,7 @@ public class AirPollutionMonitoringServer extends AirPollutionMonitoringGrpc.Air
 
     }
 
+    //method to pull values from properties files and populate properties object with them
     private Properties getProperties() {
 
         Properties prop = null;
