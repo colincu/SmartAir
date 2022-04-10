@@ -26,6 +26,7 @@ public class AirPollutionMonitoringServer extends AirPollutionMonitoringGrpc.Air
     int room4 = random.nextInt((80 - 70) + 1) + 70;
     // set array of room air quality measures
     int[] arr = {room1, room2, room3, room4};
+    //int[] arr = {74, 80, 71, 77};
 
     public static void main(String[] args) throws IOException {
         // Print to screen to see the server has started
@@ -107,7 +108,7 @@ public class AirPollutionMonitoringServer extends AirPollutionMonitoringGrpc.Air
         // loop through rooms and write in turn to the response observer
         for (int room = 1; room < num_rooms + 1; room++) {
             // print to terminal for us to validate during dev
-            //System.out.println("The air quality of room " + room + " is: " + AirQualityReply.newBuilder().setQuality(arr[room-1]));
+            System.out.println("The air quality of room " + room + " is: " + AirQualityReply.newBuilder().setQuality(arr[room-1]));
             // write to response observer
             //responseObserver.onNext(AirQualityReply.newBuilder().setQuality(arr[room-1]).build());
             AirQualityReply reply = AirQualityReply.newBuilder()

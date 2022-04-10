@@ -323,15 +323,23 @@ public class AirGUI implements ActionListener {
                     //System.out.println("Air quality for selected room is " + value.getQuality());
                     if (room1.isSelected()) {
                         selectRoomsAirQualitySuccess1.setText("The air quality of the room 1 is: " + value.getQuality());
+                    } else{
+                        selectRoomsAirQualitySuccess1.setText(" ");
                     }
                     if (room2.isSelected()) {
-                        selectRoomsAirQualitySuccess2.setText("The air quality of the room 2 is: " + value.getQuality());
+                        selectRoomsAirQualitySuccess2.setText("The air quality of the room 2 is:  " + value.getQuality());
+                    } else {
+                        selectRoomsAirQualitySuccess2.setText(" ");
                     }
                     if (room3.isSelected()) {
-                        selectRoomsAirQualitySuccess3.setText("The air quality of the room 3 is: " + value.getQuality());
+                        selectRoomsAirQualitySuccess3.setText("The air quality of the room 3 is:  " + value.getQuality());
+                    } else {
+                        selectRoomsAirQualitySuccess3.setText(" ");
                     }
                     if (room4.isSelected()) {
-                        selectRoomsAirQualitySuccess4.setText("The air quality of the room 4 is: " + value.getQuality());
+                        selectRoomsAirQualitySuccess4.setText("The air quality of the room 4 is:  " + value.getQuality());
+                    } else {
+                        selectRoomsAirQualitySuccess4.setText(" ");
                     }
                 }
 
