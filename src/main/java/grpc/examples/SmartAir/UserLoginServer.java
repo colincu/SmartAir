@@ -25,8 +25,9 @@ public class UserLoginServer extends UserLoginServiceGrpc.UserLoginServiceImplBa
         //register our server based on the properties defined
         loginserver.registerService(properties);
 
-        // Local tcp port that the service will listen for connections on
-        int port = Integer.valueOf(properties.getProperty("service_port"));
+        // Local tcp port that the service will listen for connections on - defined in properties file
+        //int port = Integer.valueOf(properties.getProperty("service_port"));
+        int port = 50555;
 
         // Try/Except block for exception handling if service fails to start listening
         try {

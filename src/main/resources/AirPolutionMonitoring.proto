@@ -11,13 +11,13 @@ service AirPollutionMonitoring {
   // unary
   rpc  RoomAirQuality (AirQualityRequest) returns (AirQualityReply) {}
 
-  // Sends a request for air quality levels for all rooms, reply is a stream of air quality levels for all rooms
+  // server side streaming - sends a request for air quality levels for all rooms, reply is a stream of air quality levels for all rooms
   rpc  AllRoomAirQuality (AllAirQualityRequest) returns (stream AirQualityReply) {}
 
-  // Sends a request for air quality levels for certain rooms, reply is a stream of air quality levels for the rooms requested
+  // bidirectional streaming - sends a request for air quality levels for certain rooms, reply is a stream of air quality levels for the rooms requested
   rpc  RoomsAirQuality (stream AirQualityRequest) returns (stream AirQualityReply) {}
 
-  //Sends a request for the average air quality of certain rooms
+  //client side streaming - sends a request for the average air quality of certain rooms
   rpc AveRoomAirQuality (stream AirQualityRequest) returns (AveAirQualityReply) {}
 }
 
