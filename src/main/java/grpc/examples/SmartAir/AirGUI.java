@@ -153,9 +153,9 @@ public class AirGUI implements ActionListener {
 
         } else if (e.getSource() == purificationChangeSpeed) {
             String selectedSpeed = (String) changeSpeed.getSelectedItem();
-            //system server variables
-            String host = "localhost";
-            int port = 50557;
+            //login server vars
+            String host = systemServiceInfo.getHostAddresses()[0];
+            int port = systemServiceInfo.getPort();
             //Create a channel for the connection using variables discovered about the system server
             ManagedChannel changeSpeedChannel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
             logger.info("Successfully set up the communication channel.");
@@ -227,8 +227,11 @@ public class AirGUI implements ActionListener {
         } else if (e.getSource() == buttonSelectRoomAirQuality) {
             //get the selected room from the combo box in the UI
             String selectedRoom = (String) selectRoomAirQualityRoom.getSelectedItem();
+            //server vars
+            String host = monitoringServiceInfo.getHostAddresses()[0];
+            int port = monitoringServiceInfo.getPort();
             //Create a channel for the connection
-            ManagedChannel selectedRoomChannel = ManagedChannelBuilder.forAddress("localhost", 50556).usePlaintext().build();
+            ManagedChannel selectedRoomChannel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
             logger.info("Successfully set up the communication channel.");
             AirPollutionMonitoringGrpc.AirPollutionMonitoringBlockingStub blockingStub;
             blockingStub = AirPollutionMonitoringGrpc.newBlockingStub(selectedRoomChannel);
@@ -263,8 +266,11 @@ public class AirGUI implements ActionListener {
         } else if (e.getSource() == buttonSelectAllRoomAirQuality) {
             //get the selected room from the combo box in the UI
             String selectedAllRoom = (String) selectAllRoomAirQualityRoom.getSelectedItem();
+            //server vars
+            String host = monitoringServiceInfo.getHostAddresses()[0];
+            int port = monitoringServiceInfo.getPort();
             //Create a channel for the connection
-            ManagedChannel selectedAllRoomChannel = ManagedChannelBuilder.forAddress("localhost", 50556).usePlaintext().build();
+            ManagedChannel selectedAllRoomChannel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
             logger.info("Successfully set up the communication channel.");
             AirPollutionMonitoringGrpc.AirPollutionMonitoringBlockingStub blockingStub;
             blockingStub = AirPollutionMonitoringGrpc.newBlockingStub(selectedAllRoomChannel);
@@ -313,8 +319,11 @@ public class AirGUI implements ActionListener {
         }
         //show selected rooms air quality
         else if (e.getSource() == buttonSelectRoomsAirQuality) {
+            //server vars
+            String host = monitoringServiceInfo.getHostAddresses()[0];
+            int port = monitoringServiceInfo.getPort();
             //Create a channel for the connection
-            ManagedChannel selectedRoomsChannel = ManagedChannelBuilder.forAddress("localhost", 50556).usePlaintext().build();
+            ManagedChannel selectedRoomsChannel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
             logger.info("Successfully set up the communication channel.");
             AirPollutionMonitoringGrpc.AirPollutionMonitoringStub nonBlockingStub;
             nonBlockingStub = AirPollutionMonitoringGrpc.newStub(selectedRoomsChannel);
@@ -402,8 +411,11 @@ public class AirGUI implements ActionListener {
         }
         //show selected rooms average air quality
         else if (e.getSource() == buttonSelectAveRoomAirQuality) {
+            //server vars
+            String host = monitoringServiceInfo.getHostAddresses()[0];
+            int port = monitoringServiceInfo.getPort();
             //Create a channel for the connection
-            ManagedChannel selectedAveRoomChannel = ManagedChannelBuilder.forAddress("localhost", 50556).usePlaintext().build();
+            ManagedChannel selectedAveRoomChannel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
             logger.info("Successfully set up the communication channel.");
             AirPollutionMonitoringGrpc.AirPollutionMonitoringStub nonBlockingStub;
             nonBlockingStub = AirPollutionMonitoringGrpc.newStub(selectedAveRoomChannel);
