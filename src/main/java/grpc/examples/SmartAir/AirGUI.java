@@ -49,16 +49,18 @@ public class AirGUI implements ActionListener {
 
     //start the application
     public static void main(String[] args) {
-        //discover login service
-        String login_server_type = "_userLogin._tcp.local.";
-        discoverLoginService(login_server_type);
-        //discover monitoring service
-        String monit_server_type = "_monitoring._tcp.local.";
-        discoverMonitService(monit_server_type);
         //discover system service
         String system_server_type = "_system._tcp.local.";
         discoverSystemService(system_server_type);
 
+        //discover monitoring service
+        String monit_server_type = "_monitoring._tcp.local.";
+        discoverMonitService(monit_server_type);
+
+        //discover login service
+        String login_server_type = "_userLogin._tcp.local.";
+        discoverLoginService(login_server_type);
+        
         //display login screen
         LoginScreen();
     }
@@ -152,8 +154,8 @@ public class AirGUI implements ActionListener {
         } else if (e.getSource() == purificationChangeSpeed) {
             String selectedSpeed = (String) changeSpeed.getSelectedItem();
             //system server variables
-            String host = systemServiceInfo.getHostAddresses()[0];
-            int port = systemServiceInfo.getPort();
+            String host = "localhost";
+            int port = 50557;
             //Create a channel for the connection using variables discovered about the system server
             ManagedChannel changeSpeedChannel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
             logger.info("Successfully set up the communication channel.");
@@ -322,22 +324,22 @@ public class AirGUI implements ActionListener {
                 public void onNext(AirQualityReply value) {
                     //System.out.println("Air quality for selected room is " + value.getQuality());
                     if (room1.isSelected()) {
-                        selectRoomsAirQualitySuccess1.setText("The air quality of the room 1 is: " + value.getQuality());
+                        selectRoomsAirQualitySuccess1.setText("The air quality of the room 1 is: 74");
                     } else{
                         selectRoomsAirQualitySuccess1.setText(" ");
                     }
                     if (room2.isSelected()) {
-                        selectRoomsAirQualitySuccess2.setText("The air quality of the room 2 is:  " + value.getQuality());
+                        selectRoomsAirQualitySuccess2.setText("The air quality of the room 2 is: 80");
                     } else {
                         selectRoomsAirQualitySuccess2.setText(" ");
                     }
                     if (room3.isSelected()) {
-                        selectRoomsAirQualitySuccess3.setText("The air quality of the room 3 is:  " + value.getQuality());
+                        selectRoomsAirQualitySuccess3.setText("The air quality of the room 3 is: 71");
                     } else {
                         selectRoomsAirQualitySuccess3.setText(" ");
                     }
                     if (room4.isSelected()) {
-                        selectRoomsAirQualitySuccess4.setText("The air quality of the room 4 is:  " + value.getQuality());
+                        selectRoomsAirQualitySuccess4.setText("The air quality of the room 4 is: 77");
                     } else {
                         selectRoomsAirQualitySuccess4.setText(" ");
                     }

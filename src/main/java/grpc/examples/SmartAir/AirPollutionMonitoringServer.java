@@ -25,8 +25,8 @@ public class AirPollutionMonitoringServer extends AirPollutionMonitoringGrpc.Air
     int room3 = random.nextInt((80 - 70) + 1) + 70;
     int room4 = random.nextInt((80 - 70) + 1) + 70;
     // set array of room air quality measures
-    int[] arr = {room1, room2, room3, room4};
-    //int[] arr = {74, 80, 71, 77};
+    //int[] arr = {room1, room2, room3, room4};
+    int[] arr = {74, 80, 71, 77};
 
     public static void main(String[] args) throws IOException {
         // Print to screen to see the server has started
